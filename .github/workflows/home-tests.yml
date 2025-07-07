@@ -1,0 +1,75 @@
+name: Home & Experience Tests
+
+on:
+  # Run daily at 11 AM UTC
+  schedule:
+    - cron: '0 11 * * *'
+  
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      test_env:
+        description: 'Test Environment'
+        required: true
+        default: 'live'
+        type: choice
+        options:
+          - dev
+          - live
+
+jobs:
+  home-tests:
+    timeout-minutes: 15
+    runs-on: ubuntu-latest
+    
+    strategy:
+      # Don't cancel other browsers if one fails
+      fail-fast: false
+      matrix:
+        # Use only reliable browsers
+        browser: [chromium, firefox]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps ${{ matrix.browser }}
+    
+    - name: Run Home & Experience Tests
+      run: |
+        npx playwright test \
+          mereka-automation/home/ \
+          mereka-automation/experience/ \
+          --project=${{ matrix.browser }} \
+          --workers=1
+      env:
+        TEST_ENV: ${{ github.event.inputs.test_env || 'live' }}
+        CI: true
+        PLAYWRIGHT_TIMEOUT: 30000
+      continue-on-error: ${{ matrix.browser == 'firefox' }}
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: home-report-${{ matrix.browser }}
+        path: playwright-report/
+        retention-days: 7
+    
+    - name: Upload test videos
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: home-videos-${{ matrix.browser }}
+        path: test-results/
+        retention-days: 3 

@@ -1,0 +1,76 @@
+name: Authentication Tests
+
+on:
+  # Run daily at 8 AM UTC (1 hour before main workflow)
+  schedule:
+    - cron: '0 8 * * *'
+  
+  # Allow manual triggering
+  workflow_dispatch:
+    inputs:
+      test_env:
+        description: 'Test Environment'
+        required: true
+        default: 'live'
+        type: choice
+        options:
+          - dev
+          - live
+
+jobs:
+  auth-tests:
+    timeout-minutes: 20
+    runs-on: ubuntu-latest
+    
+    strategy:
+      # Don't cancel other browsers if one fails
+      fail-fast: false
+      matrix:
+        # Use only reliable browsers
+        browser: [chromium, firefox]
+        
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    
+    - name: Setup Node.js
+      uses: actions/setup-node@v4
+      with:
+        node-version: '18'
+        cache: 'npm'
+    
+    - name: Install dependencies
+      run: npm ci
+    
+    - name: Install Playwright Browsers
+      run: npx playwright install --with-deps ${{ matrix.browser }}
+    
+    - name: Run Authentication Tests
+      run: |
+        npx playwright test \
+          mereka-automation/auth/login.spec.ts \
+          mereka-automation/auth/sign-up/ \
+          --project=${{ matrix.browser }} \
+          --workers=1
+      env:
+        TEST_ENV: ${{ github.event.inputs.test_env || 'live' }}
+        CI: true
+        # Add timeout to prevent hanging
+        PLAYWRIGHT_TIMEOUT: 30000
+      continue-on-error: ${{ matrix.browser == 'firefox' }}
+    
+    - name: Upload test results
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: auth-report-${{ matrix.browser }}
+        path: playwright-report/
+        retention-days: 7
+    
+    - name: Upload test videos
+      uses: actions/upload-artifact@v4
+      if: always()
+      with:
+        name: auth-videos-${{ matrix.browser }}
+        path: test-results/
+        retention-days: 3 
