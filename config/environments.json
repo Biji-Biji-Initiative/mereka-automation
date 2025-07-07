@@ -1,0 +1,97 @@
+{
+  "environments": {
+    "dev": {
+      "baseURL": "https://app.mereka.dev",
+      "timeout": 30000,
+      "retries": 2,
+      "workers": 3,
+      "testMatch": ["**/*.spec.ts"],
+      "use": {
+        "headless": true,
+        "viewport": { "width": 1280, "height": 720 },
+        "screenshot": "only-on-failure",
+        "video": "retain-on-failure"
+      }
+    },
+    "staging": {
+      "baseURL": "https://app.mereka.staging",
+      "timeout": 30000,
+      "retries": 3,
+      "workers": 5,
+      "testMatch": ["**/*.spec.ts"],
+      "use": {
+        "headless": true,
+        "viewport": { "width": 1280, "height": 720 },
+        "screenshot": "only-on-failure",
+        "video": "retain-on-failure",
+        "trace": "retain-on-failure"
+      }
+    },
+    "prod": {
+      "baseURL": "https://app.mereka.io",
+      "timeout": 60000,
+      "retries": 3,
+      "workers": 2,
+      "testMatch": ["**/smoke*.spec.ts", "**/critical*.spec.ts"],
+      "use": {
+        "headless": true,
+        "viewport": { "width": 1280, "height": 720 },
+        "screenshot": "only-on-failure",
+        "video": "retain-on-failure",
+        "trace": "retain-on-failure"
+      }
+    }
+  },
+  "browsers": {
+    "chromium": {
+      "name": "chromium",
+      "use": {
+        "browserName": "chromium",
+        "channel": "chrome"
+      }
+    },
+    "firefox": {
+      "name": "firefox",
+      "use": {
+        "browserName": "firefox"
+      }
+    },
+    "webkit": {
+      "name": "webkit",
+      "use": {
+        "browserName": "webkit"
+      }
+    }
+  },
+  "testSuites": {
+    "smoke": {
+      "testMatch": ["**/auth/login.spec.ts", "**/home/home-page-elements.spec.ts"],
+      "description": "Quick smoke tests for critical functionality"
+    },
+    "regression": {
+      "testMatch": ["**/*.spec.ts"],
+      "description": "Full regression test suite"
+    },
+    "critical": {
+      "testMatch": ["**/auth/*.spec.ts", "**/job/job-creation/*.spec.ts"],
+      "description": "Critical path tests for core business functionality"
+    }
+  },
+  "notifications": {
+    "slack": {
+      "enabled": false,
+      "webhookUrl": "",
+      "channel": "#qa-alerts",
+      "onFailure": true,
+      "onSuccess": false
+    },
+    "email": {
+      "enabled": false,
+      "smtpHost": "",
+      "smtpPort": 587,
+      "recipients": ["qa-team@company.com"],
+      "onFailure": true,
+      "onSuccess": false
+    }
+  }
+} 

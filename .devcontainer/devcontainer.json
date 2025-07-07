@@ -1,0 +1,24 @@
+{
+  "name": "Mereka Automation",
+  "image": "mcr.microsoft.com/devcontainers/javascript-node:18",
+  
+  "features": {
+    "ghcr.io/devcontainers/features/github-cli:1": {}
+  },
+  
+  "customizations": {
+    "vscode": {
+      "extensions": [
+        "ms-playwright.playwright",
+        "ms-vscode.vscode-typescript-next",
+        "esbenp.prettier-vscode"
+      ]
+    }
+  },
+  
+  "postCreateCommand": "npm install && npx playwright install --with-deps",
+  
+  "forwardPorts": [9323],
+  
+  "remoteUser": "node"
+} 

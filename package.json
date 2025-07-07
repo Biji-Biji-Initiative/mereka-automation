@@ -1,0 +1,14 @@
+{
+  "name": "mereka-e2e-tests",
+  "version": "1.0.0",
+  "description": "End-to-end tests for Mereka.io",
+  "scripts": {
+    "test": "playwright test",
+    "test:headed": "playwright test --headed",
+    "test:debug": "playwright test --debug"
+  },
+  "devDependencies": {
+    "@playwright/test": "^1.42.1",
+    "@types/node": "^20.11.24"
+  }
+} 

@@ -1,0 +1,128 @@
+version: '3.8'
+
+services:
+  playwright-dev:
+    build: 
+      context: .
+      args:
+        TEST_ENV: dev
+        BROWSER: chromium
+        WORKERS: 3
+    environment:
+      - TEST_ENV=dev
+      - BROWSER=chromium
+      - WORKERS=3
+    volumes:
+      - ./test-results:/app/test-results
+      - ./playwright-report:/app/playwright-report
+    command: ["npx", "playwright", "test", "--project=chromium", "--workers=3"]
+    profiles:
+      - dev
+
+  playwright-staging:
+    build: 
+      context: .
+      args:
+        TEST_ENV: staging
+        BROWSER: all
+        WORKERS: 5
+    environment:
+      - TEST_ENV=staging
+      - BROWSER=all
+      - WORKERS=5
+    volumes:
+      - ./test-results:/app/test-results
+      - ./playwright-report:/app/playwright-report
+    command: ["npx", "playwright", "test", "--workers=5"]
+    profiles:
+      - staging
+
+  playwright-prod:
+    build: 
+      context: .
+      args:
+        TEST_ENV: prod
+        BROWSER: chromium
+        WORKERS: 2
+    environment:
+      - TEST_ENV=prod
+      - BROWSER=chromium
+      - WORKERS=2
+    volumes:
+      - ./test-results:/app/test-results
+      - ./playwright-report:/app/playwright-report
+    command: ["npx", "playwright", "test", "**/smoke*.spec.ts", "**/critical*.spec.ts", "--project=chromium", "--workers=2"]
+    profiles:
+      - prod
+
+  playwright-reports:
+    build: .
+    ports:
+      - "9323:9323"
+    volumes:
+      - ./playwright-report:/app/playwright-report
+    command: ["npx", "playwright", "show-report", "--host", "0.0.0.0", "--port", "9323"]
+    profiles:
+      - reports
+
+  # Cross-browser testing services
+  playwright-chromium:
+    extends:
+      service: playwright-staging
+    environment:
+      - BROWSER=chromium
+    command: ["npx", "playwright", "test", "--project=chromium"]
+    profiles:
+      - cross-browser
+
+  playwright-firefox:
+    extends:
+      service: playwright-staging
+    environment:
+      - BROWSER=firefox
+    command: ["npx", "playwright", "test", "--project=firefox"]
+    profiles:
+      - cross-browser
+
+  playwright-webkit:
+    extends:
+      service: playwright-staging
+    environment:
+      - BROWSER=webkit
+    command: ["npx", "playwright", "test", "--project=webkit"]
+    profiles:
+      - cross-browser
+
+  # Test suite services
+  smoke-tests:
+    extends:
+      service: playwright-staging
+    command: ["npx", "playwright", "test", "**/auth/login.spec.ts", "**/home/home-page-elements.spec.ts", "--project=chromium"]
+    profiles:
+      - smoke
+
+  regression-tests:
+    extends:
+      service: playwright-staging
+    command: ["npx", "playwright", "test", "**/*.spec.ts"]
+    profiles:
+      - regression
+
+  critical-tests:
+    extends:
+      service: playwright-staging
+    command: ["npx", "playwright", "test", "**/auth/*.spec.ts", "**/job/job-creation/*.spec.ts"]
+    profiles:
+      - critical
+
+# Networks
+networks:
+  default:
+    driver: bridge
+
+# Volumes for persistent storage
+volumes:
+  test-results:
+    driver: local
+  playwright-report:
+    driver: local 
