@@ -8,10 +8,14 @@ const TEST_USER = {
 
 test.describe('Expert Detail Page', () => {
   test('should allow a logged-in user to view an expert detail page', async ({ page }) => {
+    // Environment validation
+    const testEnv = process.env.TEST_ENV || 'live';
+    console.log(`🌍 Running test in ${testEnv.toUpperCase()} environment`);
+    
     await page.goto('/');
 
     // --- LOGIN FLOW ---
-    console.log('Starting login flow...');
+    console.log('🔐 Starting login flow...');
     const loginLink = page.getByRole('link', { name: 'Log In' }).or(
       page.getByRole('link', { name: 'Login' })
     ).or(

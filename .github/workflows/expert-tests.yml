@@ -1,3 +1,9 @@
+# Expert & Expertise Tests Workflow
+# 
+# ⚠️  IMPORTANT: This test is optimized for LIVE environment
+# 🌍 When manually triggering, select 'live' environment for best results
+# 📅 Scheduled runs automatically use 'live' environment
+#
 name: Expert & Expertise Tests
 
 on:
@@ -9,7 +15,7 @@ on:
   workflow_dispatch:
     inputs:
       test_env:
-        description: 'Test Environment'
+        description: 'Test Environment (⚠️ Use "live" for best results)'
         required: true
         default: 'live'
         type: choice
