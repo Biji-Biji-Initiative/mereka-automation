@@ -26,8 +26,8 @@ jobs:
       # Don't cancel other browsers if one fails
       fail-fast: false
       matrix:
-        # Use only reliable browsers
-        browser: [chromium, firefox]
+        # Use only reliable browsers - Chrome only for speed
+        browser: [chromium]
         
     steps:
     - name: Checkout code
@@ -57,7 +57,7 @@ jobs:
         CI: true
         # Add timeout to prevent hanging
         PLAYWRIGHT_TIMEOUT: 30000
-      continue-on-error: ${{ matrix.browser == 'firefox' }}
+      continue-on-error: false
     
     - name: Upload test results
       uses: actions/upload-artifact@v4
