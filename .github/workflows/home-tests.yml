@@ -1,9 +1,9 @@
 name: Home & Experience Tests
 
 on:
-  # Run daily at 6:15 AM UTC+7 (11:15 PM UTC)
+  # Run daily at 6:05 AM UTC+7 (11:05 PM UTC)
   schedule:
-    - cron: '15 23 * * *'
+    - cron: '5 23 * * *'
   
   # Allow manual triggering
   workflow_dispatch:
