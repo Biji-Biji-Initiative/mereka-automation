@@ -83,64 +83,69 @@ test.describe('Job Creation', () => {
     // Handle potential review/feedback pop-ups
     const handlePopups = async () => {
       try {
-        // Handle rating dialog specifically
-        const ratingDialog = page.locator('text="How would you rate the quality of the experiences on our website?"').first();
-        if (await ratingDialog.isVisible({ timeout: 1000 }).catch(() => false)) {
-          console.log('🚨 Found rating dialog, clicking Skip...');
-          const skipButton = page.locator('button:has-text("Skip")').first();
-          if (await skipButton.isVisible({ timeout: 1000 }).catch(() => false)) {
-            await skipButton.click();
-            await page.waitForTimeout(1000);
-            console.log('✅ Rating dialog skipped');
+        let questionsHandled = 0;
+        const maxQuestions = 4; // Handle up to 4 questions
+        
+        // Keep handling questions until no more are found
+        while (questionsHandled < maxQuestions) {
+          let foundPopup = false;
+          
+          // First priority: Look for generic close/hide buttons to close entire survey
+          const closeButtons = [
+            'button:has-text("Hide survey")',
+            'button:has-text("×")',
+            'button[aria-label="Close"]',
+            'button[aria-label="close"]',
+            'button:has-text("Close")',
+            '.close-button',
+            '[data-testid="close-button"]'
+          ];
+
+          for (const selector of closeButtons) {
+            const closeButton = page.locator(selector).first();
+            if (await closeButton.isVisible({ timeout: 300 }).catch(() => false)) {
+              console.log(`🚨 Found close button: ${selector}`);
+              await closeButton.click();
+              await page.waitForTimeout(500);
+              console.log('✅ Entire survey closed via close button');
+              return; // Exit completely - survey should be closed
+            }
+          }
+
+          // Second priority: Look for skip buttons to skip individual questions
+          const skipButtons = [
+            'button:has-text("Skip")',
+            'button:has-text("No thanks")',
+            'button:has-text("Maybe later")',
+            'button:has-text("Dismiss")'
+          ];
+
+          for (const selector of skipButtons) {
+            const skipButton = page.locator(selector).first();
+            if (await skipButton.isVisible({ timeout: 300 }).catch(() => false)) {
+              console.log(`🚨 Found skip button for question ${questionsHandled + 1}: ${selector}`);
+              await skipButton.click();
+              await page.waitForTimeout(500);
+              console.log(`✅ Question ${questionsHandled + 1} skipped`);
+              questionsHandled++;
+              foundPopup = true;
+              break;
+            }
+          }
+
+          // If no popup found, we're done
+          if (!foundPopup) {
+            break;
           }
         }
 
-        // Handle close button on rating dialog
-        const ratingCloseButton = page.locator('button[aria-label="Close"], button:has-text("×")').first();
-        if (await ratingCloseButton.isVisible({ timeout: 1000 }).catch(() => false)) {
-          console.log('🚨 Found rating dialog close button, clicking...');
-          await ratingCloseButton.click();
-          await page.waitForTimeout(1000);
-          console.log('✅ Rating dialog closed');
-        }
-
-        // Hotjar and other survey widgets
-        const surveyWidgets = [
-          '[id*="survey"], [class*="hj-widget"], [class*="_hj-"]',
-          '#survey_999470', // Specific Hotjar survey
-          '[data-testid*="hotjar"], [data-testid*="survey"]'
-        ];
-
-        for (const selector of surveyWidgets) {
-          const widget = page.locator(selector).first();
-          if (await widget.isVisible({ timeout: 1000 }).catch(() => false)) {
-            console.log(`🚨 Removing survey widget: ${selector}`);
-            await widget.evaluate(el => el.remove());
-            await page.waitForTimeout(500);
-          }
-        }
-
-        // Common pop-up selectors
-        const popupSelectors = [
-          '[data-testid*="review"], [data-testid*="feedback"], [data-testid*="survey"]',
-          '.modal [aria-label*="close"], .modal .close, .modal [title*="close"]',
-          '.popup [aria-label*="close"], .popup .close, .popup [title*="close"]',
-          'button:has-text("No thanks"), button:has-text("Maybe later"), button:has-text("Skip")',
-          'button:has-text("Close"), button:has-text("×"), button:has-text("Dismiss")',
-          '[aria-label*="close"], [title*="close"], .close-button'
-        ];
-
-        for (const selector of popupSelectors) {
-          const popup = page.locator(selector).first();
-          if (await popup.isVisible({ timeout: 1000 }).catch(() => false)) {
-            console.log(`🚨 Closing pop-up with selector: ${selector}`);
-            await popup.click();
-            await page.waitForTimeout(500);
-          }
+        if (questionsHandled > 0) {
+          console.log(`✅ Handled ${questionsHandled} survey questions`);
+        } else {
+          console.log('ℹ️ No popups found to handle');
         }
       } catch (error) {
-        // Silently continue if pop-up handling fails
-        console.log('ℹ️ Pop-up handling completed');
+        console.log(`ℹ️ Pop-up handling completed (error: ${error.message})`);
       }
     };
 
@@ -1331,66 +1336,94 @@ test.describe('Job Creation', () => {
     // Step 24: Click Continue button to move to Confirmation section
     console.log('➡️ Moving to Confirmation section...');
     
-    // Check for pop-ups before continuing (especially rating dialogs)
-    await handlePopups();
-    await page.waitForTimeout(1000); // Give time for popups to fully close
-
-    const continueToConfirmationButton = page.locator('button').filter({ hasText: 'Continue' }).or(
-      page.getByRole('button', { name: 'Continue' })
-    ).or(
-      page.locator('a').filter({ hasText: 'Continue' })
-    );
-
-    await expect(continueToConfirmationButton).toBeVisible({ timeout: 10000 });
-    console.log('✅ Continue button found');
-    
-    // Try multiple approaches to click the Continue button
-    try {
-      await continueToConfirmationButton.click({ timeout: 5000 });
-      console.log('✅ Continue button clicked - moving to Confirmation');
-    } catch (error) {
-      console.log('🔧 Continue button intercepted, trying alternative approaches...');
-      
-      // Try to handle popups again
-      await handlePopups();
-      await page.waitForTimeout(1000);
-      
-      // Try force click
-      try {
-        await continueToConfirmationButton.click({ force: true });
-        console.log('✅ Continue button clicked (force) - moving to Confirmation');
-      } catch (error) {
-        console.log('🔧 Force click failed, trying to press Enter on the button...');
-        await continueToConfirmationButton.focus();
-        await page.keyboard.press('Enter');
-        console.log('✅ Continue button pressed via Enter - moving to Confirmation');
+    // Helper function to reliably click Continue button after popup handling
+    const clickContinueButton = async (maxAttempts = 3) => {
+      for (let attempt = 1; attempt <= maxAttempts; attempt++) {
+        console.log(`🔄 Continue button attempt ${attempt}/${maxAttempts}...`);
+        
+        // Always handle popups first
+        await handlePopups();
+        await page.waitForTimeout(1500); // Give extra time for popups to fully close
+        
+        // Re-locate the Continue button (fresh reference after popup handling)
+        const continueButton = page.locator('button').filter({ hasText: 'Continue' }).or(
+          page.getByRole('button', { name: 'Continue' })
+        ).or(
+          page.locator('a').filter({ hasText: 'Continue' })
+        );
+        
+        // Wait for button to be visible
+        try {
+          await expect(continueButton).toBeVisible({ timeout: 8000 });
+          console.log(`✅ Continue button found on attempt ${attempt}`);
+        } catch (error) {
+          console.log(`⚠️ Continue button not visible on attempt ${attempt}`);
+          continue;
+        }
+        
+        // Try clicking the button
+        try {
+          await continueButton.click({ timeout: 3000 });
+          console.log(`✅ Continue button clicked successfully on attempt ${attempt}`);
+          
+          // Wait for navigation and check if it worked
+          await page.waitForLoadState('domcontentloaded');
+          await page.waitForTimeout(2000);
+          
+          // Check if we successfully navigated
+          const currentUrl = page.url();
+          console.log(`🌐 URL after Continue attempt ${attempt}: ${currentUrl}`);
+          
+          if (currentUrl.includes('/confirmation')) {
+            console.log(`✅ Successfully navigated to Confirmation page on attempt ${attempt}`);
+            return true; // Success!
+          } else {
+            console.log(`⚠️ Still not on confirmation page after attempt ${attempt}, will retry...`);
+          }
+          
+        } catch (error) {
+          console.log(`🔧 Normal click failed on attempt ${attempt}, trying force click...`);
+          
+          try {
+            await continueButton.click({ force: true });
+            console.log(`✅ Force click succeeded on attempt ${attempt}`);
+            
+            // Wait for navigation and check if it worked
+            await page.waitForLoadState('domcontentloaded');
+            await page.waitForTimeout(2000);
+            
+            const currentUrl = page.url();
+            console.log(`🌐 URL after force click attempt ${attempt}: ${currentUrl}`);
+            
+            if (currentUrl.includes('/confirmation')) {
+              console.log(`✅ Successfully navigated to Confirmation page on attempt ${attempt} (force click)`);
+              return true; // Success!
+            }
+            
+          } catch (forceError) {
+            console.log(`❌ Force click also failed on attempt ${attempt}: ${forceError}`);
+          }
+        }
+        
+        // If we got here, this attempt failed
+        console.log(`❌ Attempt ${attempt} failed, will retry...`);
+        await page.waitForTimeout(1000);
       }
+      
+      return false; // All attempts failed
+    };
+    
+    // Execute the Continue button clicking with retries
+    const navigationSuccess = await clickContinueButton(3);
+    
+    if (!navigationSuccess) {
+      console.log('❌ Failed to navigate to Confirmation page after all attempts');
+      throw new Error('Could not navigate to Confirmation page - Continue button not working');
     }
-
-    // Wait for Confirmation section to load
-    await page.waitForLoadState('domcontentloaded');
-    await page.waitForTimeout(3000); // Give more time for navigation
+    
+    // Final verification and cleanup
     await handlePopups(); // Check for pop-ups on Confirmation page
-    
-    // Verify we successfully moved to confirmation page
-    console.log(`🌐 Current URL after Continue: ${page.url()}`);
-    
-    // Check if we're on the confirmation page
-    if (page.url().includes('/confirmation')) {
-      console.log('✅ Successfully navigated to Confirmation page');
-    } else {
-      console.log('⚠️ Still on Your Detail page, trying Continue button again...');
-      await handlePopups();
-      await page.waitForTimeout(1000);
-      
-      // Try one more time
-      const continueButton2 = page.locator('button').filter({ hasText: 'Continue' }).first();
-      if (await continueButton2.isVisible({ timeout: 3000 }).catch(() => false)) {
-        await continueButton2.click({ force: true });
-        await page.waitForTimeout(2000);
-        console.log(`🌐 URL after second attempt: ${page.url()}`);
-      }
-    }
+    console.log('🎉 Successfully moved to Confirmation section!');
 
     // Step 25: Click "Post this job" button
     console.log('📝 Looking for Post this job button...');
