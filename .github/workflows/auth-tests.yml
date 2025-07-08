@@ -1,9 +1,9 @@
 name: Authentication Tests
 
 on:
-  # Run daily at 8 AM UTC (1 hour before main workflow)
+  # Run daily at 6:00 AM UTC+7 (11:00 PM UTC)
   schedule:
-    - cron: '0 8 * * *'
+    - cron: '0 23 * * *'
   
   # Allow manual triggering
   workflow_dispatch:
