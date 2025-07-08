@@ -24,12 +24,13 @@ test.describe('Expert Detail Page', () => {
     await expect(loginLink).toBeVisible({ timeout: 15000 });
     await loginLink.click();
 
-    await page.waitForURL(/.*auth.*/, { timeout: 15000 });
+    await page.waitForLoadState('networkidle');
     const emailButton = page.getByRole('button', { name: 'Continue with Email' }).or(
       page.getByRole('button', { name: 'Email' })
     );
     await expect(emailButton).toBeVisible({ timeout: 10000 });
     await emailButton.click();
+    await page.waitForLoadState('networkidle');
 
     const emailField = page.locator('input[formcontrolname="email"], input[type="email"], input[name="email"], #email').first();
     await expect(emailField).toBeVisible({ timeout: 10000 });
@@ -71,7 +72,18 @@ test.describe('Expert Detail Page', () => {
       console.log('⚠️ Button disabled, trying force click...');
       await signInButton.click({ force: true });
     }
-    console.log('Login successful!');
+    
+    // Wait for login to complete with networkidle strategy
+    await page.waitForLoadState('networkidle');
+    
+    // Verify successful login by checking for login indicators
+    const loginSuccessIndicators = page.locator('[class*="profile"], [class*="user"], [class*="menu"], [class*="avatar"]').or(
+      page.getByText('Welcome').or(
+        page.getByText('Dashboard')
+      )
+    );
+    await expect(loginSuccessIndicators.first()).toBeVisible({ timeout: 15000 });
+    console.log('✅ Login successful!');
 
     // --- EXPERT PAGE TEST ---
     console.log('Navigating to expert page...');
