@@ -23,7 +23,7 @@ const envConfig = environments[ENV as keyof typeof environments] || environments
 console.log(`🚀 Running tests against: ${ENV.toUpperCase()} environment (${envConfig.baseURL})`);
 
 export default defineConfig({
-  testDir: './mereka-automation',
+  testDir: './tests',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
@@ -36,9 +36,9 @@ export default defineConfig({
   timeout: envConfig.timeout,
   use: {
     baseURL: envConfig.baseURL,
-    trace: 'on',
-    video: 'on',
-    screenshot: 'on'
+    trace: 'on-first-retry',        // Only on retries/failures
+    video: 'retain-on-failure',     // Only when tests fail
+    screenshot: 'only-on-failure'   // Only when tests fail
   },
   projects: [
     {
