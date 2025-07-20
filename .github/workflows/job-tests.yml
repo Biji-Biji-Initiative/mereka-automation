@@ -48,7 +48,7 @@ jobs:
     - name: Run Job Tests
       run: |
         npx playwright test \
-          mereka-automation/job/ \
+          tests/job/ \
           --project=${{ matrix.browser }} \
           --workers=1
       env:

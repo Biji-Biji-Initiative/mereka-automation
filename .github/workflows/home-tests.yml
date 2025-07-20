@@ -48,8 +48,8 @@ jobs:
     - name: Run Home & Experience Tests
       run: |
         npx playwright test \
-          mereka-automation/home/ \
-          mereka-automation/experience/ \
+          tests/home/ \
+          tests/experience/ \
           --project=${{ matrix.browser }} \
           --workers=1
       env:

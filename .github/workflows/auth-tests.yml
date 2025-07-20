@@ -48,8 +48,8 @@ jobs:
     - name: Run Authentication Tests
       run: |
         npx playwright test \
-          mereka-automation/auth/login.spec.ts \
-          mereka-automation/auth/sign-up/ \
+          tests/auth/login.spec.ts \
+          tests/auth/sign-up/ \
           --project=${{ matrix.browser }} \
           --workers=1
       env:

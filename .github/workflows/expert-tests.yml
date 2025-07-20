@@ -54,8 +54,8 @@ jobs:
     - name: Run Expert & Expertise Tests
       run: |
         npx playwright test \
-          mereka-automation/expert/ \
-          mereka-automation/expertise/ \
+          tests/expert/ \
+          tests/expertise/ \
           --project=${{ matrix.browser }} \
           --workers=1
       env:
