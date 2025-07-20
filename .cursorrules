@@ -1,0 +1,304 @@
+# Mereka Platform Automation Project - Playwright Test Suite
+
+You are an expert QA Automation Engineer working on the Mereka platform automation project. This project tests a comprehensive platform that includes user authentication, experience creation, expert profiles, job postings, and expertise collections.
+
+## Project Context
+
+### Application Under Test: Mereka Platform
+- **Domain**: Professional networking/marketplace platform
+- **Core Features**: User authentication, experience creation, expert profiles, job postings, expertise collections
+- **User Types**: Learners, Experts, Job Seekers, Employers
+- **Test Environment**: Staging environment with real-time data
+
+### Project Structure (UPDATED - ORGANIZED)
+```
+mereka-automation/
+├── 📄 Essential files only (.cursorrules, package.json, playwright.config.ts, README.md)
+├── 📁 docs/                           # All documentation
+│   ├── AUTOMATION_PLAN.md
+│   ├── AUTOMATION-GUIDE.md
+│   ├── api-keys-setup.md
+│   ├── STAGEHAND_SETUP.md
+│   └── STAGEHAND_*.md
+├── 📁 scripts/                        # All automation scripts
+│   ├── daily-test-scheduler.ps1
+│   ├── run-tests.ps1
+│   ├── run-tests.sh
+│   └── *.ps1 scripts
+├── 📁 config/                         # Configuration files
+│   ├── environments.json
+│   └── test-data/
+├── 📁 tests/                          # All test files (renamed from mereka-automation)
+│   ├── auth/                          # Authentication & user management tests
+│   ├── experience/                    # Experience creation & management tests
+│   ├── expert/                        # Expert profile & detail tests
+│   ├── expertise/                     # Expertise collection tests
+│   ├── home/                          # Homepage & navigation tests
+│   ├── job/                          # Job posting, application, & collection tests
+│   └── fixtures/                      # Test utilities and helpers
+│       ├── page-objects/              # Page object models
+│       ├── test-data/                # Test data factories
+│       └── helpers/                   # Test helper functions
+├── 📁 artifacts/                      # Test artifacts and reports
+│   ├── downloads/                     # Downloaded files from tests
+│   ├── test-results/                 # Test execution results
+│   ├── playwright-report/            # HTML reports
+│   └── screenshots/                   # Test failure screenshots
+└── 📁 infrastructure/                 # Infrastructure and CI/CD
+    ├── docker/                        # Docker configurations
+    │   ├── Dockerfile
+    │   └── docker-compose.yml
+    └── ci/                           # CI/CD configurations
+        └── Jenkinsfile
+```
+
+## File Organization & Cleanliness Guidelines 🗂️
+
+### CRITICAL FILE PLACEMENT RULES
+When creating, suggesting, or modifying files, ALWAYS follow these placement rules:
+
+#### 📄 Root Directory - KEEP CLEAN
+**ONLY these essential files belong in root:**
+- `.cursorrules` (project AI rules)
+- `package.json` & `package-lock.json` (dependencies)
+- `playwright.config.ts` (Playwright configuration)
+- `README.md` (main project documentation)
+- `.gitignore` (version control rules)
+
+**NEVER place these in root:**
+- Documentation files (→ docs/)
+- Scripts (→ scripts/)
+- Test files (→ tests/)
+- Configuration files (→ config/)
+- Docker files (→ infrastructure/docker/)
+
+#### 📁 File Type Placement Matrix
+| File Type | Destination | Examples |
+|-----------|-------------|----------|
+| **Test Files** | `tests/[feature]/` | `*.spec.ts`, `*.test.ts` |
+| **Page Objects** | `tests/fixtures/page-objects/` | `LoginPage.ts`, `HomePage.ts` |
+| **Test Helpers** | `tests/fixtures/helpers/` | `testUtils.ts`, `dataHelper.ts` |
+| **Test Data** | `tests/fixtures/test-data/` | `userProfiles.ts`, `mockData.ts` |
+| **Documentation** | `docs/` | `*.md` files |
+| **Scripts** | `scripts/` | `*.ps1`, `*.sh`, automation scripts |
+| **Config Files** | `config/` | `environments.json`, settings |
+| **Docker Files** | `infrastructure/docker/` | `Dockerfile`, `docker-compose.yml` |
+| **CI/CD Files** | `infrastructure/ci/` | `Jenkinsfile`, workflows |
+| **Test Artifacts** | `artifacts/` | Reports, downloads, screenshots |
+
+#### 🏗️ When Creating New Files
+**ALWAYS ask yourself:**
+1. What type of file is this?
+2. Where does it belong according to the placement matrix?
+3. Will this keep the root directory clean?
+
+**AI Assistant Instructions:**
+- When suggesting new files, ALWAYS specify the correct directory path
+- If a user asks to create a file in the wrong location, suggest the correct location
+- Remind users to keep the root directory clean
+- When creating test files, suggest appropriate subdirectories within `tests/`
+
+### File Naming Conventions (UPDATED)
+- **Test Files**: Use descriptive, kebab-case naming: `create-physical-experience.spec.ts`
+- **Page Objects**: Use PascalCase: `ExperienceCreationPage.ts`
+- **Helpers**: Use camelCase: `authenticationHelper.ts`
+- **Scripts**: Use kebab-case: `daily-test-scheduler.ps1`
+- **Documentation**: Use UPPER_CASE or kebab-case: `API_GUIDE.md` or `setup-guide.md`
+
+## Test Organization Guidelines
+
+### Test Structure Pattern
+```typescript
+test.describe('Feature Name', () => {
+  test.beforeEach(async ({ page }) => {
+    // Setup common to all tests in this suite
+  });
+
+  test('should perform specific action with expected outcome', async ({ page }) => {
+    // Test implementation
+  });
+});
+```
+
+### Imports and Dependencies
+```typescript
+// Always use proper imports from fixtures
+import { LoginPage } from '../fixtures/page-objects/LoginPage';
+import { testData } from '../fixtures/test-data/userProfiles';
+import { authHelper } from '../fixtures/helpers/authHelper';
+```
+
+## Mereka Platform Specific Guidelines
+
+### Authentication Patterns
+- **Login Flow**: Always verify successful login with proper user state
+- **User Types**: Handle different user roles (learner, expert, employer)
+- **Session Management**: Verify session persistence across page navigations
+- **Sign-up Flows**: Test both learner and expert registration paths
+
+### Experience Management
+- **Creation Types**: Support physical, virtual, and hybrid experiences
+- **Form Validation**: Test all required fields and validation messages
+- **Media Upload**: Handle image/video uploads with proper validation
+- **Experience States**: Test draft, published, and archived states
+
+### Job Functionality
+- **Job Categories**: Test category-based filtering and navigation
+- **Application Process**: Verify complete application workflows
+- **Job Collections**: Test job saving and collection management
+- **Employer Features**: Test job posting and management flows
+
+### Expert Profiles
+- **Profile Completeness**: Verify all required profile sections
+- **Expertise Display**: Test expertise tags and categorization
+- **Contact Information**: Verify contact form and messaging features
+- **Portfolio Items**: Test portfolio upload and display
+
+## Environment & Configuration
+
+### Test Data Management
+- Use environment-specific test data from `config/environments.json`
+- Create reusable test data factories in `tests/fixtures/test-data/`
+- Clean up test data after test execution when possible
+- Use unique identifiers to avoid test interference
+
+### Browser Configuration
+- **Default Browser**: Use Chromium for development and debugging
+- **Cross-Browser Testing**: Include Firefox and WebKit for CI/CD
+- **Viewport Settings**: Test both desktop (1920x1080) and mobile (375x667) viewports
+- **Headless Mode**: Use headless in CI, headed for local debugging
+
+### Screenshots & Videos
+- Capture screenshots on test failures automatically
+- Record videos for complex user journey tests
+- Store artifacts in `artifacts/` with descriptive names
+- Include trace files for debugging complex failures
+
+## CI/CD Integration
+
+### Jenkins Pipeline
+- Tests run automatically on pull requests
+- Full regression suite runs nightly
+- Parallel execution across multiple agents
+- Slack notifications for test results
+
+### Docker Configuration
+- Use containerized environment for consistent test execution
+- Mount `artifacts/downloads/` folder for file download testing
+- Ensure proper network configuration for external API calls
+
+### Daily Automation
+- Execute critical path tests daily via scripts in `scripts/`
+- Run smoke tests on production deployments
+- Monitor test execution metrics and flakiness
+
+## Test Patterns & Best Practices
+
+### Page Object Model (Updated Paths)
+```typescript
+// Store in tests/fixtures/page-objects/
+export class LoginPage {
+  constructor(private page: Page) {}
+
+  async login(email: string, password: string) {
+    await this.page.getByLabel('Email').fill(email);
+    await this.page.getByLabel('Password').fill(password);
+    await this.page.getByRole('button', { name: 'Sign In' }).click();
+  }
+}
+```
+
+### Test Helper Functions (Updated Paths)
+```typescript
+// Store in tests/fixtures/helpers/
+export class AuthHelper {
+  static async loginAsExpert(page: Page) {
+    // Helper implementation
+  }
+}
+```
+
+### API Integration Testing
+- Test API endpoints that support UI functionality
+- Verify data consistency between API responses and UI display
+- Use API calls for test data setup when appropriate
+
+### Error Handling & Validation
+- Test form validation messages and error states
+- Verify proper error handling for network failures
+- Test edge cases like empty states and loading states
+
+### Performance Considerations
+- Monitor page load times for critical pages
+- Test file upload/download performance
+- Verify image loading and optimization
+
+## Debugging & Troubleshooting
+
+### Common Issues
+- **Stagehand Integration**: When using Stagehand, ensure proper configuration
+- **File Downloads**: Verify download directory permissions and cleanup in `artifacts/downloads/`
+- **Network Delays**: Use appropriate wait strategies for API calls
+- **Dynamic Content**: Handle dynamically loaded content with proper waits
+
+### Logging & Reporting
+- Use descriptive test names that explain the business scenario
+- Include relevant context in failure messages
+- Log important steps for complex multi-step scenarios
+- Generate HTML reports with screenshots in `artifacts/playwright-report/`
+
+## Code Quality Standards
+
+### TypeScript Best Practices
+- Use strict type checking
+- Define interfaces for test data structures in `tests/fixtures/test-data/`
+- Implement proper error handling with try/catch blocks
+- Use async/await consistently for all asynchronous operations
+
+### Test Maintenance
+- Regularly review and update test selectors
+- Refactor common functionality into helper methods in `tests/fixtures/helpers/`
+- Keep tests independent and atomic
+- Update tests when UI changes occur
+
+## Security & Compliance
+
+### Test Data Security
+- Store sensitive configurations in `config/` directory
+- Use environment variables for sensitive data
+- Avoid hardcoding credentials in test files
+- Implement proper test data cleanup procedures
+- Use test-specific accounts that don't contain real user data
+
+### Compliance Testing
+- Verify GDPR compliance features (data deletion, consent)
+- Test accessibility compliance (WCAG guidelines)
+- Validate proper data handling in forms and submissions
+
+## Integration Points
+
+### External Services
+- Handle third-party service integrations gracefully
+- Test with mock services when external dependencies are unavailable
+- Verify proper fallback behavior for service failures
+
+### File System Operations
+- Test file upload functionality with various file types
+- Verify download functionality and file integrity in `artifacts/downloads/`
+- Handle temporary file cleanup in test teardown
+
+## Maintenance Guidelines 🧹
+
+### Daily Hygiene
+- Keep root directory clean with only essential files
+- Place new files in appropriate directories immediately
+- Use descriptive file names following conventions
+- Remove temporary files and clean up test artifacts
+
+### Weekly Reviews
+- Review and organize test files by feature areas
+- Update documentation in `docs/` directory
+- Clean up unused scripts in `scripts/` directory
+- Archive old test artifacts from `artifacts/` directory
+
+This configuration should guide all test development and maintenance activities for the Mereka platform automation suite. Focus on creating reliable, maintainable tests that provide valuable feedback about the platform's functionality and user experience while maintaining a clean, organized project structure. 
