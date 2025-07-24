@@ -1,9 +1,9 @@
 name: Job Tests
 
 on:
-  # Run daily at 6:15 AM UTC+7 (11:15 PM UTC)
+  # Run every Monday at 6:15 AM UTC+7 (11:15 PM UTC on Sunday)
   schedule:
-    - cron: '15 23 * * *'
+    - cron: '15 23 * * 1'
   
   # Allow manual triggering
   workflow_dispatch:
