@@ -1,0 +1,12 @@
+{
+  "mcpServers": {
+    "clickup": {
+      "command": "npx",
+      "args": ["-y", "@nazruden/clickup-mcp-server"],
+      "env": {
+        "CLICKUP_PERSONAL_TOKEN": "your_clickup_personal_api_token_here",
+        "LOG_LEVEL": "info"
+      }
+    }
+  }
+} 
