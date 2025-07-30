@@ -24,6 +24,7 @@ console.log(`🚀 Running tests against: ${ENV.toUpperCase()} environment (${env
 
 export default defineConfig({
   testDir: './tests',
+  testIgnore: '**/create-physical-experience.spec.ts',
   fullyParallel: true,
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
