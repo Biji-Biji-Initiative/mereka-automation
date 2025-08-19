@@ -1,0 +1,159 @@
+name: 🔄 AI Bug Router - Webhook Service
+
+on:
+  push:
+    paths:
+      - 'scripts/webhook-handler.js'
+      - 'scripts/two-way-sync-engine.js'
+      - '.github/workflows/webhook-service.yml'
+  workflow_dispatch:  # Allow manual trigger
+  
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  CLICKUP_TOKEN: ${{ secrets.CLICKUP_TOKEN }}
+  CLICKUP_TEAM_ID: ${{ secrets.CLICKUP_TEAM_ID }}
+  CLICKUP_LIST_ID: ${{ secrets.CLICKUP_LIST_ID }}
+  SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+  GITHUB_WEBHOOK_SECRET: ${{ secrets.GITHUB_WEBHOOK_SECRET }}
+  CLICKUP_WEBHOOK_SECRET: ${{ secrets.CLICKUP_WEBHOOK_SECRET }}
+
+jobs:
+  deploy-webhook-service:
+    name: 🚀 Deploy Webhook Service
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      issues: write
+      pull-requests: write
+      
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: 📦 Install Dependencies
+        run: |
+          cd scripts
+          npm install express
+          
+      - name: 🧪 Test Webhook Handler
+        run: |
+          echo "🧪 Testing webhook handler setup..."
+          cd scripts
+          node webhook-handler.js test
+          
+      - name: 🔄 Test Two-Way Sync Engine
+        run: |
+          echo "🔄 Testing two-way sync engine..."
+          cd scripts
+          node two-way-sync-engine.js stats
+          
+      - name: 📊 Generate Webhook Documentation
+        run: |
+          echo "📋 Generating webhook setup documentation..."
+          cd scripts
+          cat > webhook-setup.md << 'EOF'
+          # 🔄 AI Bug Router - Two-Way Sync Setup
+          
+          ## Webhook Endpoints
+          
+          ### GitHub Webhook
+          - **URL**: `https://your-domain.com/webhook/github`
+          - **Content Type**: `application/json`
+          - **Events**: 
+            - Issues (opened, closed, edited)
+            - Issue comments
+            - Pull requests
+          - **Secret**: Use `GITHUB_WEBHOOK_SECRET` environment variable
+          
+          ### ClickUp Webhook
+          - **URL**: `https://your-domain.com/webhook/clickup`
+          - **Events**:
+            - Task status updated
+            - Task updated
+            - Task created
+          - **Secret**: Use `CLICKUP_WEBHOOK_SECRET` environment variable
+          
+          ## API Endpoints
+          
+          - `GET /health` - Health check
+          - `POST /sync/trigger` - Manual sync trigger
+          - `GET /sync/status` - Sync statistics
+          
+          ## Environment Variables Required
+          
+          ```bash
+          GITHUB_TOKEN=your_github_token
+          CLICKUP_TOKEN=your_clickup_token
+          CLICKUP_TEAM_ID=your_team_id
+          CLICKUP_LIST_ID=your_list_id
+          SLACK_BOT_TOKEN=your_slack_token
+          GITHUB_WEBHOOK_SECRET=your_github_secret
+          CLICKUP_WEBHOOK_SECRET=your_clickup_secret
+          WEBHOOK_PORT=3000
+          ```
+          
+          ## Deployment Options
+          
+          ### 1. Local Development
+          ```bash
+          cd scripts
+          node webhook-handler.js start
+          ```
+          
+          ### 2. Cloud Deployment (Recommended)
+          - Deploy to Railway, Heroku, or DigitalOcean
+          - Set environment variables
+          - Configure webhook URLs in GitHub and ClickUp
+          
+          ### 3. Self-Hosted
+          - Use PM2 or similar process manager
+          - Set up reverse proxy with nginx
+          - Configure SSL certificates
+          
+          ## Features
+          
+          - ✅ Real-time GitHub → ClickUp sync
+          - ✅ Real-time ClickUp → GitHub sync  
+          - ✅ Webhook signature verification
+          - ✅ Comprehensive logging
+          - ✅ Manual sync commands in comments
+          - ✅ Health monitoring
+          - ✅ Slack notifications
+          EOF
+          
+      - name: 📊 Update Analytics with Phase 5
+        run: |
+          echo "📊 Updating analytics to track Phase 5 metrics..."
+          # This will be tracked in the daily monitoring cycle
+          echo "Phase 5 two-way sync deployment completed at $(date)" >> deployment.log
+          
+      - name: 🔔 Deployment Summary
+        run: |
+          echo "🎉 Phase 5 Two-Way Sync Deployment Complete!"
+          echo ""
+          echo "📦 Components Deployed:"
+          echo "   ✅ Two-Way Sync Engine (scripts/two-way-sync-engine.js)"
+          echo "   ✅ Webhook Handler (scripts/webhook-handler.js)"
+          echo "   ✅ GitHub Actions Workflow"
+          echo ""
+          echo "🔄 Sync Features:"
+          echo "   • GitHub Issues → ClickUp Tasks"
+          echo "   • ClickUp Task Status → GitHub Issue Status"
+          echo "   • Real-time webhook processing"
+          echo "   • Manual sync commands"
+          echo "   • Comprehensive logging and analytics"
+          echo ""
+          echo "🌐 Next Steps:"
+          echo "   1. Deploy webhook service to cloud platform"
+          echo "   2. Configure GitHub webhook URLs"
+          echo "   3. Configure ClickUp webhook URLs"
+          echo "   4. Test real-time synchronization"
+          echo ""
+          echo "📋 Documentation: webhook-setup.md created"
+

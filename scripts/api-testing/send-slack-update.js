@@ -44,7 +44,7 @@ const options = {
   method: 'POST',
   headers: {
     'Content-Type': 'application/json',
-    'Authorization': 'Bearer your-slack-token'
+    'Authorization': 'Bearer process.env.SLACK_TOKEN'
   }
 };
 

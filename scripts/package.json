@@ -4,12 +4,20 @@
   "description": "AI-powered bug routing and code fix generation scripts",
   "main": "bug-router-agent.js",
   "scripts": {
-    "route": "node bug-router-agent.js",
-    "fix": "node code-fix-generator.js",
+    "route": "node route-issues.js",
+    "fix": "node advanced-code-fix-generator.js",
+    "semantic": "node semantic-search-engine.js",
+    "enhanced-routing": "node enhanced-routing-with-codeowners.js",
+    "analytics": "node analytics-engine.js",
+    "dashboard": "node dashboard-generator.js",
+    "monitoring": "node monitoring-setup.js",
+    "two-way-sync": "node two-way-sync-engine.js",
+    "webhook": "node webhook-handler.js",
     "test": "echo \"No tests specified\""
   },
   "dependencies": {
-    "@octokit/rest": "^20.0.2",
+    "@octokit/rest": "^20.1.2",
+    "express": "^5.1.0",
     "openai": "^4.20.0"
   },
   "engines": {

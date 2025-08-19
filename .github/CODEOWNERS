@@ -1,0 +1,40 @@
+# CODEOWNERS for Biji-Biji-Initiative Repositories
+# This file defines code ownership for automatic assignment and notifications
+
+# Global fallback - all files
+* @merekahira @teoeugene
+
+# Frontend Components (React/Next.js)
+/src/components/ @merekahira @teoeugene
+/src/pages/ @merekahira @teoeugene
+/public/ @merekahira @teoeugene
+/styles/ @merekahira @teoeugene
+
+# Backend/API (Node.js/Firebase Functions)
+/functions/ @merekahira @teoeugene
+/api/ @merekahira @teoeugene
+/server/ @merekahira @teoeugene
+
+# Authentication & Security
+/src/auth/ @merekahira @teoeugene
+/functions/auth/ @merekahira @teoeugene
+
+# Database & Configuration
+/database/ @merekahira @teoeugene
+/migrations/ @merekahira @teoeugene
+/config/ @merekahira @teoeugene
+
+# Build & Deployment
+/Dockerfile @merekahira @teoeugene
+/docker-compose.yml @merekahira @teoeugene
+/.github/ @merekahira @teoeugene
+/package.json @merekahira @teoeugene
+
+# Documentation
+/docs/ @merekahira @teoeugene
+/README.md @merekahira @teoeugene
+
+# Testing & Automation
+/tests/ @merekahira @teoeugene
+/playwright.config.ts @merekahira @teoeugene
+

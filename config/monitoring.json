@@ -1,0 +1,43 @@
+{
+  "version": "1.0.0",
+  "createdAt": "2025-08-19T06:48:27.496Z",
+  "monitoring": {
+    "enabled": true,
+    "dataRetentionDays": 30,
+    "collectInterval": "24h",
+    "alertThresholds": {
+      "openIssues": 20,
+      "routingAccuracy": 80,
+      "failureRate": 0.2
+    }
+  },
+  "dashboards": {
+    "enabled": true,
+    "autoRefresh": true,
+    "refreshInterval": "5m"
+  },
+  "notifications": {
+    "slack": {
+      "enabled": true,
+      "channel": "C02GDJUE8LW",
+      "dailyReport": true,
+      "alertsOnly": false
+    },
+    "email": {
+      "enabled": false
+    }
+  },
+  "repositories": [
+    "mereka-web",
+    "mereka-web-ssr",
+    "mereka-cloudfunctions",
+    "mereka-automation"
+  ],
+  "features": {
+    "aiRouting": true,
+    "codeowners": true,
+    "semanticSearch": true,
+    "autoFixGeneration": true,
+    "performanceTracking": true
+  }
+}

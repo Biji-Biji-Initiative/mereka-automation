@@ -28,9 +28,9 @@
   "author": "Biji-Biji Initiative",
   "license": "MIT",
   "dependencies": {
-    "@octokit/rest": "^20.0.2",
-    "openai": "^4.20.0",
-    "axios": "^1.6.0"
+    "@octokit/rest": "^20.1.2",
+    "axios": "^1.6.0",
+    "openai": "^4.20.0"
   },
   "engines": {
     "node": ">=18"

@@ -1,0 +1,82 @@
+{
+  "timestamp": "2025-08-19T07:15:53.683Z",
+  "period": "7d",
+  "github": {
+    "totalIssues": 16,
+    "openIssues": 7,
+    "closedIssues": 9,
+    "totalPRs": 9,
+    "mergedPRs": 4,
+    "avgCloseTime": 0,
+    "repositories": {
+      "mereka-web": {
+        "issues": 5,
+        "openIssues": 1,
+        "closedIssues": 4,
+        "prs": 3,
+        "mergedPRs": 3
+      },
+      "mereka-web-ssr": {
+        "issues": 11,
+        "openIssues": 6,
+        "closedIssues": 5,
+        "prs": 6,
+        "mergedPRs": 1
+      },
+      "mereka-cloudfunctions": {
+        "issues": 0,
+        "openIssues": 0,
+        "closedIssues": 0,
+        "prs": 0,
+        "mergedPRs": 0
+      },
+      "mereka-automation": {
+        "issues": 0,
+        "openIssues": 0,
+        "closedIssues": 0,
+        "prs": 0,
+        "mergedPRs": 0
+      }
+    }
+  },
+  "clickup": {
+    "totalTasks": 0,
+    "completedTasks": 0,
+    "inProgressTasks": 0,
+    "bugTasks": 0,
+    "avgCompletionTime": 0
+  },
+  "slack": {
+    "sosReactions": 0,
+    "messagesProcessed": 0,
+    "channelActivity": {},
+    "note": "Slack metrics require additional API setup"
+  },
+  "routing": {
+    "totalRoutingEvents": 0,
+    "successfulRoutes": 0,
+    "failedRoutes": 0,
+    "avgRoutingTime": 0,
+    "accuracyScore": 0
+  },
+  "summary": {
+    "overallHealth": "good",
+    "keyInsights": [
+      "Issue resolution rate: 56.3%",
+      "PR merge rate: 44.4%"
+    ],
+    "recommendations": [
+      "AI routing accuracy could be improved - review routing logic"
+    ],
+    "alerts": []
+  },
+  "twoWaySync": {
+    "totalMappings": 0,
+    "recentSyncs": 6,
+    "githubToClickupSyncs": 0,
+    "clickupToGithubSyncs": 0,
+    "successRate": "66.7",
+    "lastSyncTime": "2025-08-19T07:15:44.501Z",
+    "webhookEvents": 0
+  }
+}

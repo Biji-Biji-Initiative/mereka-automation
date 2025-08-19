@@ -10,6 +10,9 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
+// Use GPT-4o for high-quality ticket analysis and creation
+const TICKET_MODEL = 'gpt-4o';
+
 // Repository routing registry (same as Cloud Function)
 const REPO_REGISTRY = {
   'mereka-frontend': ['ui', 'react', 'web', 'frontend', 'login', 'experience', 'dashboard', 'component'],
@@ -54,10 +57,9 @@ Focus on technical indicators, error messages, file paths, and component names m
 `;
 
     const response = await openai.chat.completions.create({
-      model: "gpt-4o-mini",
+      model: TICKET_MODEL,  // GPT-5-mini for fast ticket analysis
       messages: [{ role: "user", content: prompt }],
-      temperature: 0.3,
-      max_tokens: 1000
+      max_tokens: 1000  // GPT-4o uses max_tokens
     });
 
     let analysisResult;

@@ -1,0 +1,17 @@
+{
+  "githubToClickup": {},
+  "clickupToGithub": {},
+  "statusMappings": {
+    "github": {
+      "open": "to do",
+      "closed": "complete"
+    },
+    "clickup": {
+      "to do": "open",
+      "in progress": "open",
+      "complete": "closed",
+      "closed": "closed"
+    }
+  },
+  "lastSync": "2025-08-19T07:15:44.501Z"
+}

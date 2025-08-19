@@ -51,7 +51,7 @@ $body = @{
 } | ConvertTo-Json
 
 Invoke-RestMethod -Uri "https://slack.com/api/chat.postMessage" -Method POST `
-  -Headers @{"Authorization"="Bearer your-slack-token"; "Content-Type"="application/json"} `
+  -Headers @{"Authorization"="Bearer your-slack-user-oauth-token-here"; "Content-Type"="application/json"} `
   -Body $body
 ```
 

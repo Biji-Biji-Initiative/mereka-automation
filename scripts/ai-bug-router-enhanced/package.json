@@ -1,0 +1,38 @@
+{
+  "name": "enhanced-ai-bug-router",
+  "version": "2.0.0",
+  "description": "Enhanced AI Bug Router with intelligent classification and deduplication",
+  "main": "main.js",
+  "scripts": {
+    "start": "node main.js",
+    "daily": "node main.js daily",
+    "health": "node main.js health",
+    "test": "node main.js test",
+    "dev": "NODE_ENV=development node main.js",
+    "prod": "NODE_ENV=production node main.js daily"
+  },
+  "keywords": [
+    "ai",
+    "bug-router",
+    "automation",
+    "slack",
+    "clickup",
+    "classification",
+    "deduplication"
+  ],
+  "author": "Mereka Team",
+  "license": "MIT",
+  "dependencies": {
+    "node-fetch": "^2.6.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.0.0"
+  },
+  "engines": {
+    "node": ">=14.0.0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/your-org/enhanced-ai-bug-router"
+  }
+}

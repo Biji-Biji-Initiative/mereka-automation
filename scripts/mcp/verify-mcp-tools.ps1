@@ -14,7 +14,7 @@ if ($clickupResponse) {
 
 # Test Slack API
 Write-Host "`n⚠️  Testing Slack..." -ForegroundColor Yellow
-$slackHeaders = @{"Authorization" = "Bearer your-slack-tokenfd65b33d20e73f23c58526cede8614f"}
+$slackHeaders = @{"Authorization" = "Bearer your-slack-token"}
 $slackResponse = Invoke-RestMethod -Uri "https://slack.com/api/auth.test" -Headers $slackHeaders -ErrorAction SilentlyContinue
 if ($slackResponse.ok) {
     Write-Host "   ✓ Slack: Connected as '$($slackResponse.user)'" -ForegroundColor Green

@@ -24,7 +24,7 @@ This guide walks you through setting up Model Context Protocol (MCP) servers for
 3. **Generate API Token** → Click "Generate" → Copy the token
 4. **Get Team ID** → In ClickUp URL, find the number (e.g., `app.clickup.com/2627356/`)
 
-**Example Token Format:** `pk_66733245_76BVBTVC88U8QUMWSOAW9FDRTXZ28H15`
+**Example Token Format:** `your-clickup-api-token-here`
 
 ### Step 2: Test ClickUp Connection
 Create a test script to verify your token works:
@@ -497,7 +497,7 @@ cat .cursor/mcp.json
 - **Cursor MCP Guide:** https://docs.cursor.com/mcp
 
 ### Token Formats
-- **ClickUp:** `pk_66733245_76BVBTVC88U8QUMWSOAW9FDRTXZ28H15`
+- **ClickUp:** `your-clickup-api-token-here`
 - **Slack Bot:** `xoxb-1030870860245-5748099538886-abc123`
 - **Slack User:** `your-slack-token`
 

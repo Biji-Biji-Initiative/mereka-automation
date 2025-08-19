@@ -62,46 +62,141 @@ async function createGitHubIssue(repo, title, body, labels = []) {
 }
 
 // AI-powered repository router
+/**
+ * Enhanced repository routing with AI-powered analysis
+ * Phase 2 Enhancement: Advanced routing using AI classification
+ */
 async function routeToRepository(aiAnalysis) {
-  const keywords = [
+  console.log('🔍 Starting enhanced repository routing...');
+  
+  // If AI provided repository hints, use them with high priority
+  if (aiAnalysis.repositoryHints) {
+    console.log('🎯 Using AI repository hints:', aiAnalysis.repositoryHints);
+    
+    const aiChoice = aiAnalysis.repositoryHints.primary;
+    const aiAlternatives = aiAnalysis.repositoryHints.alternatives || [];
+    const aiReasoning = aiAnalysis.repositoryHints.reasoning;
+    
+    // Validate AI choice against known repositories
+    const validRepos = Object.keys(REPO_REGISTRY);
+    const isValidChoice = validRepos.includes(aiChoice);
+    
+    if (isValidChoice) {
+      return {
+        method: 'ai-routing',
+        primary: {
+          repo: aiChoice,
+          confidence: aiAnalysis.confidence || 0.9,
+          reasoning: aiReasoning
+        },
+        alternatives: aiAlternatives
+          .filter(alt => validRepos.includes(alt))
+          .map(alt => ({ repo: alt, confidence: 0.7 })),
+        shouldAutoRoute: (aiAnalysis.confidence || 0.9) >= 0.75,
+        aiMetadata: {
+          category: aiAnalysis.bugType,
+          affectedArea: aiAnalysis.affectedArea,
+          urgency: aiAnalysis.urgency,
+          complexity: aiAnalysis.estimatedComplexity
+        }
+      };
+    }
+  }
+  
+  // Fallback to enhanced keyword-based routing with AI context
+  console.log('🔄 Using enhanced keyword-based routing...');
+  
+  const analysisText = [
+    aiAnalysis.title || '',
+    aiAnalysis.coreIssueDescription || '',
     ...(aiAnalysis.component_keywords || []),
     ...(aiAnalysis.technicalDetails || []),
-    aiAnalysis.title,
-    aiAnalysis.coreIssueDescription
+    ...(aiAnalysis.reproductionSteps || []),
+    aiAnalysis.bugType || '',
+    aiAnalysis.affectedArea || ''
   ].join(' ').toLowerCase();
   
-  console.log('🔍 Routing analysis for keywords:', keywords);
+  console.log('📝 Analysis text for routing:', analysisText.substring(0, 200) + '...');
   
   const scores = {};
   let maxScore = 0;
   
-  // Score each repository based on keyword matches
+  // Enhanced scoring with weighted categories
   Object.entries(REPO_REGISTRY).forEach(([repo, hints]) => {
-    const score = hints.reduce((acc, hint) => {
-      return acc + (keywords.includes(hint.toLowerCase()) ? 1 : 0);
-    }, 0);
+    let score = 0;
+    const matchedKeywords = [];
+    
+    hints.forEach(hint => {
+      if (analysisText.includes(hint.toLowerCase())) {
+        score += 1;
+        matchedKeywords.push(hint);
+      }
+    });
+    
+    // Bonus scoring based on AI classification
+    if (aiAnalysis.bugType) {
+      if (repo === 'mereka-web' && ['frontend', 'user-experience'].includes(aiAnalysis.bugType)) {
+        score += 2; // Bonus for frontend issues
+      } else if (repo === 'mereka-cloudfunctions' && ['backend', 'infrastructure'].includes(aiAnalysis.bugType)) {
+        score += 2; // Bonus for backend issues
+      } else if (repo === 'mereka-web-ssr' && aiAnalysis.bugType === 'ssr') {
+        score += 3; // High bonus for SSR-specific issues
+      }
+    }
+    
+    // Bonus scoring for affected area
+    if (aiAnalysis.affectedArea) {
+      const areaBonus = {
+        'authentication': { 'mereka-cloudfunctions': 2, 'mereka-web': 1 },
+        'profiles': { 'mereka-web': 2, 'mereka-cloudfunctions': 1 },
+        'jobs': { 'mereka-web': 2, 'mereka-cloudfunctions': 1 },
+        'experiences': { 'mereka-web': 2, 'mereka-cloudfunctions': 1 },
+        'search': { 'mereka-web-ssr': 2, 'mereka-web': 1 },
+        'payments': { 'mereka-cloudfunctions': 3 }
+      };
+      
+      if (areaBonus[aiAnalysis.affectedArea] && areaBonus[aiAnalysis.affectedArea][repo]) {
+        score += areaBonus[aiAnalysis.affectedArea][repo];
+      }
+    }
     
     if (score > 0) {
-      scores[repo] = score;
+      scores[repo] = { score, matchedKeywords };
       maxScore = Math.max(maxScore, score);
     }
   });
   
-  // Normalize scores and find best match
+  // Calculate final candidates with enhanced scoring
   const candidates = Object.entries(scores)
-    .map(([repo, score]) => ({
+    .map(([repo, { score, matchedKeywords }]) => ({
       repo,
-      score: score / maxScore,
-      confidence: score / maxScore
+      score: score,
+      confidence: maxScore > 0 ? score / maxScore : 0,
+      matchedKeywords: matchedKeywords,
+      normalizedScore: maxScore > 0 ? (score / maxScore * 100).toFixed(1) : '0'
     }))
     .sort((a, b) => b.score - a.score);
   
-  console.log('📊 Repository routing candidates:', candidates);
+  console.log('📊 Enhanced routing candidates:', candidates);
+  
+  const topChoice = candidates[0] || null;
+  const shouldAutoRoute = topChoice && topChoice.confidence >= 0.6; // Lower threshold for keyword routing
   
   return {
+    method: 'keyword-routing',
     candidates,
-    topChoice: candidates[0] || null,
-    shouldAutoRoute: candidates[0]?.confidence >= 0.7
+    primary: topChoice ? {
+      repo: topChoice.repo,
+      confidence: topChoice.confidence,
+      reasoning: `Matched keywords: ${topChoice.matchedKeywords.join(', ')}`,
+      matchedKeywords: topChoice.matchedKeywords
+    } : null,
+    shouldAutoRoute,
+    aiMetadata: aiAnalysis.classification ? {
+      category: aiAnalysis.bugType,
+      affectedArea: aiAnalysis.affectedArea,
+      aiConfidence: aiAnalysis.confidence
+    } : null
   };
 }
 
@@ -191,65 +286,176 @@ function analyzeMessageContent(messageText) {
 }
 
 // AI-powered bug report analysis using GPT
-async function analyzeWithAI(messageText) {
+/**
+ * Enhanced AI analysis with multi-step reasoning and learning
+ * Phase 2 Enhancement: Advanced AI-powered triage agent
+ */
+async function analyzeWithAI(messageText, context = {}) {
   const ai = await initializeOpenAI();
   
   if (!ai) {
-    // Fallback to rule-based analysis if AI is not available
     console.log('📝 Using rule-based analysis (AI not available)');
     return null;
   }
 
   try {
-    console.log('🤖 Analyzing bug report with AI...');
+    console.log('🤖 Starting enhanced multi-step AI analysis...');
     
-    const prompt = `You are a senior QA engineer analyzing a bug report. Extract SPECIFIC details from this Slack message to create a precise bug ticket.
+    // Step 1: Classification and Context Analysis
+    const classificationPrompt = `You are an expert software QA analyst for Mereka, a professional networking/marketplace platform.
 
-Bug Report Message:
-"${messageText}"
+Platform Context:
+- Core Features: User authentication, experience creation, expert profiles, job postings, expertise collections
+- User Types: Learners, Experts, Job Seekers, Employers
+- Tech Stack: Frontend (React/Next.js), Backend (Cloud Functions/Firebase), SSR (Next.js), Testing (Playwright)
 
-CRITICAL: Use EXACT details from the message. Do NOT use generic language. Extract:
-- Specific UI elements mentioned (buttons, pages, forms, etc.)
-- Exact error behaviors described
-- Specific user actions mentioned
-- Actual impact described by the user
+Message: "${messageText}"
+${context.threadContext ? `Thread Context: ${context.threadContext}` : ''}
 
-Please analyze and provide ONLY a valid JSON response (no markdown formatting) with this structure:
+Analyze and classify this issue. Return ONLY valid JSON:
 {
-  "title": "[Issue] Specific problem with exact component/feature mentioned in message",
-  "technicalDetails": ["Extract 3-4 SPECIFIC technical problems mentioned in the message - use exact terminology from the user"],
-  "reproductionSteps": ["Extract EXACT steps mentioned by user", "Include specific pages/actions they described", "Use their exact workflow"],
-  "expectedResult": "What the user specifically said should happen (use their exact words when possible)",
-  "actualResult": "What the user specifically described is happening wrong (use their exact description)", 
-  "preconditions": ["Extract specific conditions mentioned by user", "Include exact user roles/permissions they mentioned"],
-  "coreIssueDescription": "Write a comprehensive description (5-10 sentences) that focuses on: what exactly is happening wrong, where the issue occurs, how the broken behavior manifests, and the technical/functional details of the problem. Describe the actual malfunction or incorrect behavior in detail using the user's specific examples and terminology. Focus on the mechanics of what's broken rather than business impact."
-}
+  "classification": {
+    "isValidBug": true/false,
+    "confidence": 0.0-1.0,
+    "primaryCategory": "frontend|backend|ssr|testing|infrastructure|user-experience",
+    "affectedArea": "authentication|profiles|jobs|experiences|search|payments",
+    "userImpact": "low|medium|high|critical",
+    "urgency": "low|medium|high|critical"
+  },
+  "technicalIndicators": {
+    "errorPatterns": ["specific errors mentioned"],
+    "behaviorIssues": ["incorrect behaviors"],
+    "performanceIssues": ["slow loading", "timeouts"],
+    "uiProblems": ["layout issues", "interaction problems"]
+  },
+  "contextClues": {
+    "mentionedComponents": ["login", "dashboard", "job listing"],
+    "devices": ["mobile", "desktop", "browser type"],
+    "userRoles": ["expert", "learner", "employer"],
+    "workflows": ["job posting", "profile creation"]
+  }
+}`;
 
-REMEMBER: Be SPECIFIC, not generic. Use the user's exact terminology and scenarios.`;
-
-    const response = await ai.chat.completions.create({
+    const classificationResult = await ai.chat.completions.create({
       model: "gpt-4o-mini",
-      messages: [{ role: "user", content: prompt }],
-      temperature: 0.3,
-      max_tokens: 1200
+      messages: [{ role: "user", content: classificationPrompt }],
+      temperature: 0.1,
+      max_tokens: 600
     });
 
-    // Clean the response to handle markdown formatting
-    let responseContent = response.choices[0].message.content;
+    let classificationResponse = classificationResult.choices[0].message.content;
+    classificationResponse = classificationResponse.replace(/```json\s*/, '').replace(/```\s*$/, '').trim();
     
-    // Remove markdown code blocks if present
-    responseContent = responseContent.replace(/```json\s*/, '').replace(/```\s*$/, '');
+    let classification;
+    try {
+      classification = JSON.parse(classificationResponse);
+      console.log(`🎯 Classification: ${classification.classification.primaryCategory} (${(classification.classification.confidence * 100).toFixed(1)}% confidence)`);
+    } catch (parseError) {
+      console.error('❌ Classification parsing failed:', parseError.message);
+      return null;
+    }
+
+    // Early return if not a valid bug with sufficient confidence
+    if (!classification.classification.isValidBug || classification.classification.confidence < 0.6) {
+      console.log('⚠️ Low confidence or invalid bug detected');
+      return {
+        isValidBug: false,
+        confidence: classification.classification.confidence,
+        reason: 'AI determined this may not be a valid bug report',
+        classification: classification.classification
+      };
+    }
+
+    // Step 2: Detailed Technical Analysis
+    const analysisPrompt = `Based on the classification, perform detailed technical analysis for a ${classification.classification.primaryCategory} issue affecting ${classification.classification.affectedArea}.
+
+Original Message: "${messageText}"
+Classification: ${JSON.stringify(classification.classification)}
+Technical Indicators: ${JSON.stringify(classification.technicalIndicators)}
+
+Generate a comprehensive, specific bug report. Return ONLY valid JSON:
+{
+  "title": "Specific, actionable bug title focusing on the exact issue (max 80 chars)",
+  "coreIssueDescription": "Comprehensive 5-10 sentence technical description focusing on: the specific malfunction, where it occurs in the system, how the broken behavior manifests, exact user impact, technical scope, and what needs to be fixed. Use specific terminology from the message.",
+  "technicalDetails": [
+    "Specific technical problem #1 with exact details",
+    "System behavior issue #2 with context", 
+    "Error condition #3 with manifestation"
+  ],
+  "reproductionSteps": [
+    "Step 1: Specific user action with exact context",
+    "Step 2: System interaction or page navigation",
+    "Step 3: Point where issue manifests with details",
+    "Step 4: Observable failure or incorrect behavior"
+  ],
+  "expectedResult": "Detailed description of correct functionality and expected behavior",
+  "actualResult": "Specific description of the problematic behavior and what's actually happening",
+  "preconditions": [
+    "Specific user state or permissions required",
+    "Platform/device requirements",
+    "Data conditions or setup needed"
+  ],
+  "environmentContext": [
+    "Device/browser information from message",
+    "User role and permissions context",
+    "Timing or frequency details",
+    "Related system state"
+  ],
+  "component_keywords": ["extracted", "technical", "routing", "keywords"],
+  "severity": "${classification.classification.userImpact}",
+  "urgency": "${classification.classification.urgency}",
+  "bugType": "${classification.classification.primaryCategory}",
+  "affectedArea": "${classification.classification.affectedArea}",
+  "confidence": ${classification.classification.confidence},
+  "repositoryHints": {
+    "primary": "most likely repository based on technical analysis",
+    "alternatives": ["backup repository options"],
+    "reasoning": "technical justification for routing decision"
+  },
+  "suggestedLabels": ["bug", "${classification.classification.primaryCategory}", "${classification.classification.affectedArea}"],
+  "estimatedComplexity": "simple|moderate|complex",
+  "requiresImmediateAttention": ${classification.classification.urgency === 'critical' ? 'true' : 'false'}
+}
+
+Be highly specific and technical. Extract exact details from the user's message.`;
+
+    const analysisResult = await ai.chat.completions.create({
+      model: "gpt-4o-mini", 
+      messages: [{ role: "user", content: analysisPrompt }],
+      temperature: 0.2,
+      max_tokens: 1400
+    });
+
+    let analysisResponse = analysisResult.choices[0].message.content;
+    analysisResponse = analysisResponse.replace(/```json\s*/, '').replace(/```\s*$/, '').trim();
     
-    // Remove any leading/trailing whitespace
-    responseContent = responseContent.trim();
-    
-    const aiAnalysis = JSON.parse(responseContent);
-    console.log('✅ AI analysis completed');
-    
-    return aiAnalysis;
+    try {
+      const analysis = JSON.parse(analysisResponse);
+      
+      // Add enhanced metadata
+      analysis.aiVersion = '2.0-enhanced-triage';
+      analysis.analysisTimestamp = new Date().toISOString();
+      analysis.processingSteps = ['classification', 'technical-analysis'];
+      analysis.classification = classification.classification;
+      analysis.technicalIndicators = classification.technicalIndicators;
+      analysis.contextClues = classification.contextClues;
+      
+      console.log('✅ Enhanced AI analysis completed successfully');
+      console.log(`🎯 Final Confidence: ${(analysis.confidence * 100).toFixed(1)}%`);
+      console.log(`📊 Complexity: ${analysis.estimatedComplexity}, Urgency: ${analysis.urgency}`);
+      console.log(`🎯 Primary Target: ${analysis.repositoryHints.primary}`);
+      
+      return analysis;
+      
+    } catch (parseError) {
+      console.error('❌ Failed to parse technical analysis:', parseError.message);
+      console.log('Raw response:', analysisResponse);
+      return null;
+    }
+
   } catch (error) {
-    console.error('❌ Error with AI analysis:', error);
-    return null; // Fallback to rule-based
+    console.error('❌ Enhanced AI analysis failed:', error.message);
+    return null;
   }
 }
 
@@ -959,9 +1165,9 @@ async function sendEnhancedSlackConfirmation(channel, threadTimestamp, taskId, t
       ? `GitHub Issue: ${githubIssue.url} (#${githubIssue.number})`
       : 'GitHub: Issue creation failed';
     
-    const routingInfo = routingResult.shouldAutoRoute && routingResult.topChoice
-      ? `Auto-routed to: ${routingResult.topChoice.repo} (${(routingResult.topChoice.confidence * 100).toFixed(1)}% confidence)`
-      : `Routing: Manual review required${routingResult.candidates.length > 0 ? ` (${routingResult.candidates.length} candidates)` : ''}`;
+    const routingInfo = routingResult.shouldAutoRoute && routingResult.primary
+      ? `Auto-routed to: ${routingResult.primary.repo} (${(routingResult.primary.confidence * 100).toFixed(1)}% confidence) via ${routingResult.method}`
+      : `Routing: Manual review required${routingResult.candidates?.length > 0 ? ` (${routingResult.candidates.length} candidates)` : ''}`;
     
     const confirmationMessage = `🤖 Automated Bug Report Created!
 
@@ -1150,16 +1356,19 @@ ${bugReport.actualResult}
       let githubIssue = null;
       const githubOrg = 'Biji-Biji-Initiative'; // Production organization
       
-      if (routingResult.shouldAutoRoute && routingResult.topChoice) {
+      if (routingResult.shouldAutoRoute && routingResult.primary) {
         // Auto-route to specific repository
-        const targetRepo = `${githubOrg}/${routingResult.topChoice.repo}`;
-        console.log(`🎯 Auto-routing to repository: ${targetRepo} (confidence: ${routingResult.topChoice.confidence})`);
+        const targetRepo = `${githubOrg}/${routingResult.primary.repo}`;
+        console.log(`🎯 Auto-routing to repository: ${targetRepo} (confidence: ${routingResult.primary.confidence}) via ${routingResult.method}`);
         
-        const githubBody = `## Automated Bug Report
+        const githubBody = `## 🤖 Enhanced AI Bug Report
 
 **Source**: Slack Thread - ${threadLink}
 **ClickUp Task**: ${taskResult.taskUrl}
-**Auto-routed**: Yes (confidence: ${(routingResult.topChoice.confidence * 100).toFixed(1)}%)
+**Auto-routed**: Yes (${(routingResult.primary.confidence * 100).toFixed(1)}% confidence via ${routingResult.method})
+**AI Analysis**: ${aiAnalysis?.aiVersion || 'N/A'}
+${routingResult.aiMetadata ? `**Category**: ${routingResult.aiMetadata.category} | **Area**: ${routingResult.aiMetadata.affectedArea} | **Urgency**: ${routingResult.aiMetadata.urgency}` : ''}
+**Routing Reasoning**: ${routingResult.primary.reasoning}
 
 ### Issue Description
 ${bugReport.description}

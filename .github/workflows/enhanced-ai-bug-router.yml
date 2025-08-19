@@ -14,10 +14,6 @@ on:
 jobs:
   enhanced-bug-router:
     runs-on: ubuntu-latest
-    permissions:
-      issues: write
-      contents: read
-      pull-requests: write
     
     steps:
       - name: Checkout repository

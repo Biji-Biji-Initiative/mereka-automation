@@ -1,6 +1,6 @@
 const https = require('https');
 
-const CLICKUP_TOKEN = 'pk_66733245_76BVBTVC88U8QUMWSOAW9FDRTXZ28H15';
+const CLICKUP_TOKEN = 'process.env.CLICKUP_TOKEN';
 
 console.log('🔄 Testing ClickUp connection...');
 

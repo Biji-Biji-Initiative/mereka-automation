@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>🤖 AI Bug Router - Analytics Dashboard</title>
+    <link rel="stylesheet" href="dashboard.css">
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🤖 AI Bug Router Analytics</h1>
+            <p class="subtitle">Real-time insights into your automated bug routing system</p>
+            <p class="timestamp">Last updated: 19/08/2025, 14.15.53</p>
+        </header>
+
+        <div class="metrics-grid">
+            <!-- GitHub Metrics -->
+            <div class="metric-card">
+                <div class="metric-header">
+                    <h3>🐙 GitHub Activity</h3>
+                    <span class="period">7d</span>
+                </div>
+                <div class="metric-content">
+                    <div class="metric-stat">
+                        <span class="stat-value">16</span>
+                        <span class="stat-label">Total Issues</span>
+                    </div>
+                    <div class="metric-stat">
+                        <span class="stat-value">7</span>
+                        <span class="stat-label">Open Issues</span>
+                    </div>
+                    <div class="metric-stat">
+                        <span class="stat-value">9</span>
+                        <span class="stat-label">Closed Issues</span>
+                    </div>
+                    <div class="metric-stat">
+                        <span class="stat-value">9</span>
+                        <span class="stat-label">Pull Requests</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ClickUp Metrics -->
+            <div class="metric-card">
+                <div class="metric-header">
+                    <h3>📋 ClickUp Activity</h3>
+                    <span class="period">7d</span>
+                </div>
+                <div class="metric-content">
+                    <div class="metric-stat">
+                        <span class="stat-value">0</span>
+                        <span class="stat-label">Total Tasks</span>
+                    </div>
+                    <div class="metric-stat">
+                        <span class="stat-value">0</span>
+                        <span class="stat-label">Completed</span>
+                    </div>
+                    <div class="metric-stat">
+                        <span class="stat-value">0</span>
+                        <span class="stat-label">In Progress</span>
+                    </div>
+                    <div class="metric-stat">
+                        <span class="stat-value">0</span>
+                        <span class="stat-label">Bug Tasks</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- AI Routing Metrics -->
+            <div class="metric-card">
+                <div class="metric-header">
+                    <h3>🎯 AI Routing Performance</h3>
+                    <span class="period">7d</span>
+                </div>
+                <div class="metric-content">
+                    <div class="metric-stat">
+                        <span class="stat-value">0</span>
+                        <span class="stat-label">Routing Events</span>
+                    </div>
+                    <div class="metric-stat">
+                        <span class="stat-value">0</span>
+                        <span class="stat-label">Successful</span>
+                    </div>
+                    <div class="metric-stat">
+                        <span class="stat-value">0</span>
+                        <span class="stat-label">Failed</span>
+                    </div>
+                    <div class="metric-stat">
+                        <span class="stat-value">0%</span>
+                        <span class="stat-label">Accuracy</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Two-Way Sync Metrics (Phase 5) -->
+            <div class="metric-card">
+                <div class="metric-header">
+                    <h3>🔄 Two-Way Sync (Phase 5)</h3>
+                    <span class="period">7d</span>
+                </div>
+                <div class="metric-content">
+                    <div class="metric-stat">
+                        <span class="stat-value">0</span>
+                        <span class="stat-label">Active Mappings</span>
+                    </div>
+                    <div class="metric-stat">
+                        <span class="stat-value">6</span>
+                        <span class="stat-label">Recent Syncs</span>
+                    </div>
+                    <div class="metric-stat">
+                        <span class="stat-value">0</span>
+                        <span class="stat-label">Webhook Events</span>
+                    </div>
+                    <div class="metric-stat">
+                        <span class="stat-value">66.7%</span>
+                        <span class="stat-label">Success Rate</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- System Health -->
+            <div class="metric-card health-card">
+                <div class="metric-header">
+                    <h3>🏥 System Health</h3>
+                    <span class="health-status good">GOOD</span>
+                </div>
+                <div class="metric-content">
+                    <div class="health-details">
+                        <h4>📈 Key Insights</h4>
+                        <ul>
+                            <li>Issue resolution rate: 56.3%</li><li>PR merge rate: 44.4%</li>
+                        </ul>
+                        
+                        
+                        
+                        
+                        <h4>💡 Recommendations</h4>
+                        <ul class="recommendations">
+                            <li class="recommendation">AI routing accuracy could be improved - review routing logic</li>
+                        </ul>
+                        
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Charts Section -->
+        <div class="charts-section">
+            <h2>📊 Visual Analytics</h2>
+            
+            <div class="charts-grid">
+                <div class="chart-container">
+                    <h3>GitHub Issues Distribution</h3>
+                    <canvas id="githubChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>ClickUp Tasks Status</h3>
+                    <canvas id="clickupChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>AI Routing Success Rate</h3>
+                    <canvas id="routingChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Repository Activity</h3>
+                    <canvas id="repoChart"></canvas>
+                </div>
+                
+                <div class="chart-container">
+                    <h3>Two-Way Sync Performance</h3>
+                    <canvas id="syncChart"></canvas>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>🤖 Generated by AI Bug Router Analytics Engine</p>
+            <p>Data refreshed every 24 hours at 12:00 AM Malaysia time</p>
+        </footer>
+    </div>
+
+    <script>
+        // Chart data from metrics
+        const metricsData = {"timestamp":"2025-08-19T07:15:53.683Z","period":"7d","github":{"totalIssues":16,"openIssues":7,"closedIssues":9,"totalPRs":9,"mergedPRs":4,"avgCloseTime":0,"repositories":{"mereka-web":{"issues":5,"openIssues":1,"closedIssues":4,"prs":3,"mergedPRs":3},"mereka-web-ssr":{"issues":11,"openIssues":6,"closedIssues":5,"prs":6,"mergedPRs":1},"mereka-cloudfunctions":{"issues":0,"openIssues":0,"closedIssues":0,"prs":0,"mergedPRs":0},"mereka-automation":{"issues":0,"openIssues":0,"closedIssues":0,"prs":0,"mergedPRs":0}}},"clickup":{"totalTasks":0,"completedTasks":0,"inProgressTasks":0,"bugTasks":0,"avgCompletionTime":0},"slack":{"sosReactions":0,"messagesProcessed":0,"channelActivity":{},"note":"Slack metrics require additional API setup"},"routing":{"totalRoutingEvents":0,"successfulRoutes":0,"failedRoutes":0,"avgRoutingTime":0,"accuracyScore":0},"summary":{"overallHealth":"good","keyInsights":["Issue resolution rate: 56.3%","PR merge rate: 44.4%"],"recommendations":["AI routing accuracy could be improved - review routing logic"],"alerts":[]},"twoWaySync":{"totalMappings":0,"recentSyncs":6,"githubToClickupSyncs":0,"clickupToGithubSyncs":0,"successRate":"66.7","lastSyncTime":"2025-08-19T07:15:44.501Z","webhookEvents":0}};
+        
+        // GitHub Issues Chart
+        new Chart(document.getElementById('githubChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Open Issues', 'Closed Issues'],
+                datasets: [{
+                    data: [metricsData.github.openIssues, metricsData.github.closedIssues],
+                    backgroundColor: ['#ff6b6b', '#51cf66']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // ClickUp Tasks Chart
+        new Chart(document.getElementById('clickupChart'), {
+            type: 'bar',
+            data: {
+                labels: ['Total', 'Completed', 'In Progress', 'Bug Tasks'],
+                datasets: [{
+                    data: [
+                        metricsData.clickup.totalTasks,
+                        metricsData.clickup.completedTasks,
+                        metricsData.clickup.inProgressTasks,
+                        metricsData.clickup.bugTasks
+                    ],
+                    backgroundColor: ['#339af0', '#51cf66', '#ffd43b', '#ff6b6b']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // AI Routing Chart
+        new Chart(document.getElementById('routingChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['Successful', 'Failed'],
+                datasets: [{
+                    data: [metricsData.routing.successfulRoutes, metricsData.routing.failedRoutes],
+                    backgroundColor: ['#51cf66', '#ff6b6b']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // Repository Activity Chart
+        new Chart(document.getElementById('repoChart'), {
+            type: 'bar',
+            data: {
+                labels: Object.keys(metricsData.github.repositories),
+                datasets: [{
+                    label: 'Issues',
+                    data: Object.values(metricsData.github.repositories).map(repo => repo.issues || 0),
+                    backgroundColor: '#339af0'
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { display: false }
+                }
+            }
+        });
+
+        // Two-Way Sync Chart
+        new Chart(document.getElementById('syncChart'), {
+            type: 'doughnut',
+            data: {
+                labels: ['GitHub → ClickUp', 'ClickUp → GitHub', 'Webhook Events'],
+                datasets: [{
+                    data: [
+                        metricsData.twoWaySync.githubToClickupSyncs,
+                        metricsData.twoWaySync.clickupToGithubSyncs,
+                        metricsData.twoWaySync.webhookEvents
+                    ],
+                    backgroundColor: ['#51cf66', '#339af0', '#ffd43b']
+                }]
+            },
+            options: {
+                responsive: true,
+                plugins: {
+                    legend: { position: 'bottom' }
+                }
+            }
+        });
+
+        // Auto-refresh every 5 minutes
+        setTimeout(() => {
+            location.reload();
+        }, 5 * 60 * 1000);
+    </script>
+</body>
+</html>

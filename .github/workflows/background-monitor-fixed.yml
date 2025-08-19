@@ -2,7 +2,7 @@ name: 🤖 AI Bug Router - Daily Monitor
 
 on:
   schedule:
-    - cron: "0 0 * * *"   # Daily at 08:00 AM Malaysia Time (UTC+8 = 00:00 UTC)
+    - cron: "0 16 * * *"  # Daily at 12:00 AM Malaysia Time (UTC+8 = 16:00 UTC)
   workflow_dispatch:  # Allow manual trigger
   
 env:
@@ -30,11 +30,18 @@ jobs:
         with:
           node-version: '20'
           
-      - name: 📦 Install Dependencies
+      - name: 📦 Install Root Dependencies
         run: |
-          echo "Installing scripts dependencies..."
+          if [ -f package.json ]; then
+            npm ci
+          else
+            echo "No root package.json found, skipping root install"
+          fi
+          
+      - name: 📦 Install Scripts Dependencies
+        run: |
           cd scripts
-          npm install --production --no-package-lock
+          npm install
           
       - name: 🏥 System Health Check
         run: |
@@ -55,42 +62,6 @@ jobs:
           cd scripts
           node route-issues.js || echo "Routing completed with warnings"
           
-      - name: 📊 Collect Performance Metrics
-        run: |
-          echo "📈 Collecting system performance metrics..."
-          cd scripts
-          node analytics-engine.js metrics || echo "Metrics collection completed with warnings"
-          
-      - name: 📋 Generate Analytics Report
-        run: |
-          echo "📊 Generating analytics report..."
-          cd scripts
-          node analytics-engine.js report || echo "Report generation completed with warnings"
-          
-      - name: 🎨 Update Analytics Dashboard
-        run: |
-          echo "🎨 Updating analytics dashboard..."
-          cd scripts
-          node dashboard-generator.js both || echo "Dashboard update completed with warnings"
-          
-      - name: 🏥 System Health Check
-        run: |
-          echo "🏥 Checking system health..."
-          cd scripts
-          node monitoring-setup.js health || echo "Health check completed with warnings"
-          
-      - name: 🔄 Run Two-Way Sync (Phase 5)
-        run: |
-          echo "🔄 Running bidirectional GitHub ↔ ClickUp sync..."
-          cd scripts
-          node two-way-sync-engine.js sync || echo "Two-way sync completed with warnings"
-          
-      - name: 📊 Collect Sync Statistics
-        run: |
-          echo "📊 Collecting two-way sync statistics..."
-          cd scripts
-          node two-way-sync-engine.js stats || echo "Sync stats collection completed"
-          
       - name: 🔧 Generate Code Fixes
         run: |
           echo "🛠️ Analyzing issues for automated fixes..."
@@ -110,5 +81,5 @@ jobs:
           echo "📊 Daily AI Bug Router Report - $(date)"
           echo "✅ Daily monitoring cycle completed"
           echo "🕛 Next run: Tomorrow at 12:00 AM Malaysia Time"
-          echo "📈 Analytics dashboard available in analytics-dashboard/"
-          echo "🏥 Health reports stored in analytics-data/"
+          echo "📈 Check repository for detailed logs and reports"
+
