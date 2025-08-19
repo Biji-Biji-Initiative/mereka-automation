@@ -1,0 +1,87 @@
+name: 🤖 AI Bug Router - Background Monitor
+
+on:
+  schedule:
+    - cron: "*/5 * * * *"  # Every 5 minutes
+  workflow_dispatch:  # Allow manual trigger
+  
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+  OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
+  CLICKUP_TOKEN: ${{ secrets.CLICKUP_TOKEN }}
+  CLICKUP_LIST_ID: ${{ secrets.CLICKUP_LIST_ID }}
+  SLACK_BOT_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
+
+jobs:
+  monitor-and-route:
+    name: 🔍 Monitor Issues & Route
+    runs-on: ubuntu-latest
+    permissions:
+      issues: write
+      contents: read
+      pull-requests: write
+      
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: 📦 Install Dependencies
+        run: npm ci
+        
+      - name: 🔍 Scan for Issues Needing Routing
+        id: scan
+        run: |
+          echo "🔍 Scanning repositories for routing opportunities..."
+          node scripts/scan-repositories.js
+          
+      - name: 🎯 Route Issues with AI Analysis
+        if: steps.scan.outputs.issues_found == 'true'
+        run: |
+          echo "🤖 Running AI-powered issue routing..."
+          node scripts/route-issues.js
+          
+      - name: 🔧 Generate Code Fixes
+        run: |
+          echo "🛠️ Analyzing issues for automated fixes..."
+          node scripts/code-fix-generator.js
+          
+      - name: 📊 Update Analytics
+        run: |
+          echo "📈 Updating routing analytics..."
+          echo "Analytics feature coming soon..."
+          
+      - name: 🔔 Send Summary to Slack
+        if: always()
+        run: |
+          echo "📢 Sending activity summary to Slack..."
+          node scripts/send-summary.js
+
+  health-check:
+    name: 🏥 System Health Check
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        
+      - name: 🟢 Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          
+      - name: 📦 Install Dependencies
+        run: npm ci
+        
+      - name: 🔍 Check Cloud Function Health
+        run: |
+          echo "🏥 Checking Cloud Function status..."
+          node scripts/health-check.js

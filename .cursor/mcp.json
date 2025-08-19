@@ -2,10 +2,18 @@
   "mcpServers": {
     "clickup": {
       "command": "npx",
-      "args": ["-y", "@nazruden/clickup-mcp-server"],
+      "args": ["-y", "clickup-mcp-server"],
       "env": {
-        "CLICKUP_PERSONAL_TOKEN": "your_clickup_personal_api_token_here",
-        "LOG_LEVEL": "info"
+        "CLICKUP_API_TOKEN": "your-clickup-token",
+        "CLICKUP_TEAM_ID": "2627356"
+      }
+    },
+    "slack": {
+      "command": "npx",
+      "args": ["-y", "slack-mcp-server"],
+      "env": {
+        "SLACK_MCP_XOXP_TOKEN": "your-slack-tokenfd65b33d20e73f23c58526cede8614f",
+        "SLACK_TEAM_ID": "bijimereka"
       }
     }
   }

@@ -29,6 +29,19 @@ playwright-report/
 .env.test.local
 .env.production.local
 
+# Security - API Keys and Tokens (CRITICAL)
+**/api-keys.txt
+**/tokens.txt
+**/*token*.txt
+**/*key*.txt
+**/*secret*.txt
+# Specific token patterns to prevent accidental commits
+*pk_*
+*xoxp-*
+*xoxb-*
+*sk-proj-*
+*sk-*
+
 # IDE and editor files
 .vscode/
 .idea/
@@ -48,6 +61,10 @@ Thumbs.db
 # Windows specific
 desktop.ini
 $RECYCLE.BIN/
+
+# Cache files
+.channels_cache.json
+.users_cache.json
 
 # Temporary files
 *.tmp

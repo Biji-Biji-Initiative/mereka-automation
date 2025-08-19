@@ -1,22 +1,38 @@
 {
-  "name": "mereka-e2e-tests",
+  "name": "mereka-automation",
   "version": "1.0.0",
-  "description": "End-to-end tests for Mereka.io",
+  "description": "AI-powered bug routing and automation system for Mereka platform",
+  "main": "scripts/route-issues.js",
   "scripts": {
-    "test": "playwright test",
-    "test:headed": "playwright test --headed",
-    "test:debug": "playwright test --debug",
-    "test:stagehand": "cross-env TEST_ENV=live playwright test tests/auth/login-stagehand.spec.ts --headed",
-    "test:stagehand:all": "cross-env TEST_ENV=live playwright test tests/**/*stagehand*.spec.ts --headed",
-    "test:stagehand:headless": "cross-env TEST_ENV=live playwright test tests/auth/login-stagehand.spec.ts"
+    "start": "node scripts/route-issues.js",
+    "scan": "node scripts/scan-repositories.js",
+    "route": "node scripts/route-issues.js",
+    "fix": "node scripts/generate-fixes.js",
+    "health": "node scripts/health-check.js",
+    "test": "echo \"Tests coming soon\"",
+    "analytics": "node scripts/update-analytics.js"
   },
-  "devDependencies": {
-    "@playwright/test": "^1.42.1",
-    "@types/node": "^20.11.24",
-    "cross-env": "^7.0.3"
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/Biji-Biji-Initiative/mereka-automation.git"
   },
+  "keywords": [
+    "ai",
+    "automation",
+    "bug-routing",
+    "github",
+    "slack",
+    "clickup",
+    "mereka"
+  ],
+  "author": "Biji-Biji Initiative",
+  "license": "MIT",
   "dependencies": {
-    "@browserbasehq/stagehand": "^2.4.1",
-    "zod": "^3.25.76"
+    "@octokit/rest": "^20.0.2",
+    "openai": "^4.20.0",
+    "axios": "^1.6.0"
+  },
+  "engines": {
+    "node": ">=18"
   }
 }

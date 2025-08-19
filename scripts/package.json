@@ -1,0 +1,18 @@
+{
+  "name": "bug-router-scripts",
+  "version": "1.0.0",
+  "description": "AI-powered bug routing and code fix generation scripts",
+  "main": "bug-router-agent.js",
+  "scripts": {
+    "route": "node bug-router-agent.js",
+    "fix": "node code-fix-generator.js",
+    "test": "echo \"No tests specified\""
+  },
+  "dependencies": {
+    "@octokit/rest": "^20.0.2",
+    "openai": "^4.20.0"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}

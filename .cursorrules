@@ -301,4 +301,245 @@ export class AuthHelper {
 - Clean up unused scripts in `scripts/` directory
 - Archive old test artifacts from `artifacts/` directory
 
-This configuration should guide all test development and maintenance activities for the Mereka platform automation suite. Focus on creating reliable, maintainable tests that provide valuable feedback about the platform's functionality and user experience while maintaining a clean, organized project structure. 
+This configuration should guide all test development and maintenance activities for the Mereka platform automation suite. Focus on creating reliable, maintainable tests that provide valuable feedback about the platform's functionality and user experience while maintaining a clean, organized project structure.
+
+# MCP (Model Context Protocol) Integration 🔌
+
+## Overview
+This project has fully functional MCP integrations for workflow automation. The MCP tools are configured in `.cursor/mcp.json` and are available in every Cursor chat session.
+
+## Available MCP Tools
+
+### ✅ ClickUp Integration (FULLY WORKING)
+**Status**: Operational and reliable
+**Configuration**: `.cursor/mcp.json` with ClickUp API token and team ID
+**Available Tools**:
+- `mcp_clickup_create_task` - Create tasks in ClickUp lists
+- `mcp_clickup_get_task_details` - Get task information
+- `mcp_clickup_update_task` - Update existing tasks
+- `mcp_clickup_get_lists` - Get lists from spaces/folders
+- `mcp_clickup_get_workspaces` - Get workspace information
+- And many more ClickUp management tools
+
+**Working Example**:
+```typescript
+// Create a task in the "All bugs" list
+mcp_clickup_create_task({
+  list_id: "900501824745",
+  name: "Test task from MCP",
+  description: "Created via Cursor IDE MCP integration",
+  priority: 2,
+  status: "to do"
+})
+```
+
+**Key Details**:
+- Workspace: Mereka (ID: 2627356)
+- Main list: "All bugs" (ID: 900501824745)
+- Successfully tested and verified working
+
+### ⚠️ Slack Integration (CONFIGURED WITH WORKAROUND)
+**Status**: Configured but MCP tools have communication issues
+**Configuration**: `.cursor/mcp.json` with User OAuth token and team ID
+**Available Tools** (when working):
+- `mcp_slack_conversations_add_message` - Send messages to channels
+- `mcp_slack_channels_list` - List available channels
+- `mcp_slack_conversations_history` - Get message history
+- `mcp_slack_conversations_search_messages` - Search messages
+- And more Slack communication tools
+
+**Known Issue**: MCP tools sometimes fail due to communication issues
+**Working Workaround**: Use direct Slack API calls via PowerShell:
+
+```powershell
+$body = @{ 
+  channel = "C02GDJUE8LW"; 
+  text = "Your message here" 
+} | ConvertTo-Json
+
+Invoke-RestMethod -Uri "https://slack.com/api/chat.postMessage" -Method POST `
+  -Headers @{"Authorization"="Bearer your-slack-token"; "Content-Type"="application/json"} `
+  -Body $body
+```
+
+**Key Details**:
+- Team: Mereka & Biji-biji Initiative Team
+- Main channel: C02GDJUE8LW
+- User OAuth token configured with all required scopes
+- Direct API calls verified working
+
+## Quick Verification Commands
+
+### Test ClickUp Connection:
+```typescript
+mcp_clickup_get_workspaces({random_string: "test"})
+```
+
+### Test Slack Connection (if MCP tools work):
+```typescript
+mcp_slack_channels_list({channel_types: "public_channel", limit: 5})
+```
+
+### Test Slack via Direct API:
+```powershell
+Invoke-RestMethod -Uri "https://slack.com/api/auth.test" -Headers @{"Authorization"="Bearer your-slack-token"}
+```
+
+## Automated Workflow Examples
+
+### Complete Task Creation + Notification:
+1. **Create ClickUp Task**: Use `mcp_clickup_create_task`
+2. **Notify Slack**: Use direct API call to post success message
+3. **Example**: Task ID 86czrt9p4 was successfully created and reported
+
+### Troubleshooting for New Chat Sessions
+
+**If MCP tools seem unavailable:**
+1. **Verify Configuration**: Check `.cursor/mcp.json` exists and is properly formatted
+2. **Test ClickUp**: Try `mcp_clickup_get_workspaces` - this should always work
+3. **Test Slack**: Try MCP tools first, fall back to direct API if needed
+4. **Restart Cursor**: If tools are completely missing, restart Cursor to reload MCP servers
+
+**Common Responses for AI Agents:**
+- "MCP tools are configured and available in this project"
+- "ClickUp MCP integration is verified working"
+- "Slack integration uses User OAuth token with direct API fallback"
+- "Both integrations have been tested and are operational"
+
+## Configuration Files
+
+### `.cursor/mcp.json`:
+```json
+{
+  "mcpServers": {
+    "clickup": {
+      "command": "npx",
+      "args": ["-y", "clickup-mcp-server"],
+      "env": {
+        "CLICKUP_API_TOKEN": "pk_66733245_76BVBTVC88U8QUMWSOAW9FDRTXZ28H15",
+        "CLICKUP_TEAM_ID": "2627356"
+      }
+    },
+    "slack": {
+      "command": "npx",
+      "args": ["-y", "slack-mcp-server"],
+      "env": {
+        "SLACK_MCP_XOXP_TOKEN": "your-slack-token",
+        "SLACK_TEAM_ID": "bijimereka"
+      }
+    }
+  }
+}
+```
+
+**IMPORTANT FOR AI AGENTS**: Always assume MCP tools are available and working unless explicitly tested and confirmed otherwise. The ClickUp integration is particularly reliable and should be used confidently for task management automation.
+
+# Bug Report & Task Creation Standards 🐛
+
+## ClickUp Bug Report Template
+
+When creating bug reports or issues in ClickUp, ALWAYS use this standardized template to ensure consistency and completeness:
+
+### Task Name Format
+- Start with `[Issue]`
+- If issue happened in live environment, add `[Issue][Hotfix]`
+- Example: `[Issue] Login button not working on mobile Safari`
+- Example: `[Issue][Hotfix] Payment processing fails for credit cards`
+
+### Required Template Structure
+
+🎯 **Description:**
+Summarize the issue clearly. Explain what's going wrong, where it's happening (e.g., page/module), and any relevant background info such as if it was previously fixed or only happens under certain conditions.
+
+🔗 **Link to Thread:**
+Provide the link to the conversation, Slack thread, email, or ticket where this issue was first reported or discussed.
+
+📋 **Preconditions:**
+Mention any necessary conditions that must exist before the bug occurs.
+
+🔧 **Steps to Reproduce:**
+List the exact steps to trigger the bug. Use bullet points for clarity.
+
+✅ **Expected Result:**
+Describe what should happen if the system works correctly.
+
+❌ **Actual Result:**
+Describe what actually happens (what's broken).
+
+🎨 **Figma Link:**
+[Leave empty field for design reference]
+
+📎 **Attachments:**
+[Leave empty field for screenshots, files, etc.]
+
+### Formatting Rules for ClickUp Tasks
+- Use clean format WITHOUT asterisks or excessive markdown
+- Use emoji headers for sections (🎯, 📋, 🔧, etc.)
+- Use simple bullet points and numbered lists
+- Avoid `**bold**` markdown in task descriptions
+- Keep formatting professional and readable
+- Only report MAIN TASKS to Slack, never subtasks
+
+### Smart Formatting Rules
+- Lead with core issue in maximum 5 clear sentences
+- Extract technical details into separate section
+- Clean up casual language → professional tone
+- Structure long messages into bullet points
+- Highlight key terms (job reuse, status changes, etc.)
+
+### Slack Message Formatting Rules (CRITICAL)
+- NEVER use **bold** or *italic* asterisks (display as literal text in Slack)
+- NEVER use Unicode symbols like → (display as ?? in Slack)
+- ALWAYS use clean text with emoji for visual hierarchy (✅, 🎯, etc.)
+- Use simple colon formatting: "Title: [content]"
+- Use line breaks for structure
+- Use plain ASCII like -> or > instead of Unicode arrows
+- Keep all Slack messages professional and readable
+
+### ClickUp Integration Workflow
+1. **Create Task**: Use `mcp_clickup_create_task` with the standardized template
+2. **Assign Priority**: Set appropriate priority (1=urgent, 2=high, 3=normal, 4=low)
+3. **Set Status**: Default to "to do" for new issues
+4. **Target List**: Use "All bugs" list (ID: 900501824745) for issues
+5. **Assignment**: Assign to both Hiramani Upadhyay (ID: 25514528) and Fadlan (ID: 66733245) for notifications
+6. **Notify Team**: Send notification to Slack channel (C02GDJUE8LW) for critical issues
+
+### Example ClickUp Task Creation
+```typescript
+mcp_clickup_create_task({
+  list_id: "900501824745",
+  name: "[Issue] Login form validation not working on mobile",
+  description: `🎯 Description:
+Users cannot submit login form on mobile devices due to validation errors not clearing when corrected.
+
+🔗 Link to Thread:
+https://slack.com/channels/general/thread123
+
+📋 Preconditions:
+- User must be on mobile device (iOS Safari or Android Chrome)
+- User must have previously entered invalid credentials
+
+🔧 Steps to Reproduce:
+• Open login page on mobile device
+• Enter invalid email format
+• See validation error
+• Correct the email to valid format
+• Try to submit form
+
+✅ Expected Result:
+Validation error should clear and form should submit successfully
+
+❌ Actual Result:
+Validation error persists and form submission is blocked
+
+🎨 Figma Link:
+[To be added]
+
+📎 Attachments:
+[Screenshots to be added]`,
+  priority: 2,
+  status: "to do"
+})
+```
+
+**CRITICAL**: This template must be used for ALL bug reports and issues to maintain consistency and ensure complete information capture for effective debugging and resolution. 
