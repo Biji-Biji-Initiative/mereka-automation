@@ -12,7 +12,7 @@
       "command": "npx",
       "args": ["-y", "slack-mcp-server"],
       "env": {
-        "SLACK_MCP_XOXP_TOKEN": "your-slack-tokenfd65b33d20e73f23c58526cede8614f",
+        "SLACK_MCP_XOXP_TOKEN": "your-slack-token",
         "SLACK_TEAM_ID": "bijimereka"
       }
     }
