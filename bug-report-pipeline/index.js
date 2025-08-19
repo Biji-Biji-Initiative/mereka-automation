@@ -1029,13 +1029,13 @@ async function generateBugReport(messageText, threadLink) {
 ${aiAnalysis.coreIssueDescription}
 
 📝 Technical Details:
-${aiAnalysis.technicalDetails.map(detail => `• ${detail}`).join('\n')}
+      ${(aiAnalysis.technicalDetails || []).map(detail => `• ${detail}`).join('\n')}
 
 ⚠️ Issue reported via SOS emoji reaction requiring immediate attention.`,
       expectedResult: aiAnalysis.expectedResult,
       actualResult: aiAnalysis.actualResult,
-      preconditions: aiAnalysis.preconditions.map(condition => `- ${condition}`).join('\n'),
-      reproductionSteps: aiAnalysis.reproductionSteps.map((step, index) => `${index + 1}. ${step}`).join('\n')
+      preconditions: (aiAnalysis.preconditions || []).map(condition => `- ${condition}`).join('\n'),
+      reproductionSteps: (aiAnalysis.reproductionSteps || []).map((step, index) => `${index + 1}. ${step}`).join('\n')
     };
   }
   

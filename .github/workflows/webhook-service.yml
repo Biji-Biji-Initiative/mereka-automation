@@ -1,12 +1,14 @@
-name: 🔄 AI Bug Router - Webhook Service
+name: 🔄 AI Bug Router - Webhook Service [DISABLED]
 
+# DISABLED: Replaced by Enhanced AI Bug Router  
+# This webhook service has been superseded by the new Enhanced AI Bug Router system
 on:
-  push:
-    paths:
-      - 'scripts/webhook-handler.js'
-      - 'scripts/two-way-sync-engine.js'
-      - '.github/workflows/webhook-service.yml'
-  workflow_dispatch:  # Allow manual trigger
+  # push:
+  #   paths:
+  #     - 'scripts/webhook-handler.js'
+  #     - 'scripts/two-way-sync-engine.js'
+  #     - '.github/workflows/webhook-service.yml'
+  workflow_dispatch:  # Keep manual trigger for emergency use only
   
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
