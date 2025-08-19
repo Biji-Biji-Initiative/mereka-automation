@@ -30,6 +30,24 @@ jobs:
           cache: 'npm'
           cache-dependency-path: 'scripts/ai-bug-router-enhanced/package-lock.json'
           
+      - name: Validate Security Configuration
+        run: |
+          echo "🔐 Validating security setup..."
+          # Check that no secrets are hardcoded in files
+          if grep -r "sk-" scripts/ 2>/dev/null | grep -v "your-" | grep -v "example" | grep -v "placeholder"; then
+            echo "❌ Potential OpenAI key found in code!"
+            exit 1
+          fi
+          if grep -r "xoxb-\|xoxp-" scripts/ 2>/dev/null | grep -v "your-" | grep -v "example" | grep -v "placeholder"; then
+            echo "❌ Potential Slack token found in code!"
+            exit 1
+          fi
+          if grep -r "pk_.*_" scripts/ 2>/dev/null | grep -v "your-" | grep -v "example" | grep -v "placeholder"; then
+            echo "❌ Potential ClickUp token found in code!"
+            exit 1
+          fi
+          echo "✅ Security validation passed - no hardcoded secrets detected"
+          
       - name: Install dependencies
         run: |
           cd scripts/ai-bug-router-enhanced
@@ -37,11 +55,14 @@ jobs:
           
       - name: Run Enhanced AI Bug Router
         env:
+          # Sensitive API Keys - Properly secured via GitHub Secrets
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           CLICKUP_API_TOKEN: ${{ secrets.CLICKUP_TOKEN }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
-          SLACK_CHANNEL: C02GDJUE8LW
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          
+          # Public configuration (safe to expose)
+          SLACK_CHANNEL: C02GDJUE8LW
           NODE_ENV: production
           
           # Enhanced Router Configuration
@@ -77,6 +98,7 @@ jobs:
       - name: Health Check
         if: always()
         env:
+          # Sensitive API Keys - Required for health check
           OPENAI_API_KEY: ${{ secrets.OPENAI_API_KEY }}
           CLICKUP_API_TOKEN: ${{ secrets.CLICKUP_TOKEN }}
           SLACK_TOKEN: ${{ secrets.SLACK_BOT_TOKEN }}
