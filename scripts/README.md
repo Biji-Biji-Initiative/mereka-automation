@@ -2,6 +2,29 @@
 
 This directory contains automation scripts organized by function to maintain a clean, scalable structure.
 
+## 🤖 Enhanced AI Bug Router (Primary System)
+
+**Location**: `/ai-bug-router-enhanced/`
+
+The main AI-powered bug routing and triage system with intelligent classification, deduplication, and automated workflows.
+
+**Key Features**:
+- ✅ Smart issue classification (real bugs vs user errors vs admin issues)
+- ✅ AI-powered code fix generation with human oversight
+- ✅ Deduplication system to prevent duplicate PRs
+- ✅ User education responses for non-bug issues
+- ✅ Emoji-based team controls (🆘🚨🙋🤖)
+- ✅ Daily automated workflow at 8:00 AM Malaysia Time
+
+**Usage**:
+```bash
+cd ai-bug-router-enhanced
+npm install
+node main.js daily    # Run daily workflow
+node main.js health   # Health check
+node test-demo.js     # Test with sample issues
+```
+
 ## Directory Structure
 
 ### 🔧 `/mcp/` - MCP Server Management
