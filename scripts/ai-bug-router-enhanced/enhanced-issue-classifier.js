@@ -91,6 +91,14 @@ class EnhancedIssueClassifier {
           /email.*not.*sent/i, /notification.*missing/i, /alert.*not.*received/i,
           /campaign.*stopped/i, /mailing.*list/i, /unsubscribed/i,
           /email.*service/i, /smtp.*error/i, /delivery.*failed/i
+        ],
+        data_mapping_issues: [
+          /wrong.*name.*email/i, /incorrect.*host.*name/i, /different.*name.*appears/i,
+          /wrong.*user.*data/i, /profile.*mix.*up/i, /wrong.*information.*email/i,
+          /template.*variable/i, /email.*template.*wrong/i, /substitution.*error/i,
+          /wrong.*recipient.*data/i, /email.*shows.*wrong/i, /name.*mismatch/i,
+          /role.*listed.*as/i, /admin.*instead.*of/i, /profile.*incorrect/i,
+          /user.*details.*wrong/i, /email.*personalization/i, /merge.*field/i
         ]
       }
     };
@@ -101,7 +109,8 @@ class EnhancedIssueClassifier {
       user_actions: 2.0,
       confusion_language: 1.8,
       permission_issues: 2.2,
-      system_changes: 1.9
+      system_changes: 1.9,
+      data_mapping_issues: 2.5
     };
   }
 
