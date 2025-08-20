@@ -70,6 +70,14 @@ class EnhancedIssueClassifier {
           /layout.*broken/i, /css.*issue/i, /styling.*problem/i,
           /text overlapping/i, /images not loading/i, /responsive/i,
           /mobile.*view/i, /dropdown.*broken/i, /form.*not.*submitting/i
+        ],
+        encoding_formatting_bugs: [
+          /symbols.*not.*generating/i, /characters.*not.*displaying/i, /encoding.*issue/i,
+          /apostrophe.*not.*working/i, /ampersand.*not.*working/i, /special.*characters/i,
+          /text.*formatting.*broken/i, /character.*encoding/i, /utf.*8/i,
+          /symbols.*glitchy/i, /characters.*glitchy/i, /formatting.*glitchy/i,
+          /email.*subject.*glitchy/i, /template.*rendering/i, /html.*entities/i,
+          /escape.*characters/i, /unicode.*issue/i, /charset.*problem/i
         ]
       },
 
@@ -110,7 +118,8 @@ class EnhancedIssueClassifier {
       confusion_language: 1.8,
       permission_issues: 2.2,
       system_changes: 1.9,
-      data_mapping_issues: 2.5
+      data_mapping_issues: 2.5,
+      encoding_formatting_bugs: 2.8
     };
   }
 
