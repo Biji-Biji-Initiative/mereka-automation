@@ -24,7 +24,7 @@ OPENAI_API_KEY=sk-your-actual-openai-key-here
 #### **2. ClickUp API Token** (You already have this!)
 ```bash
 # You already have this configured
-CLICKUP_API_TOKEN=pk_66733245_76BVBTVC88U8QUMWSOAW9FDRTXZ28H15
+CLICKUP_API_TOKEN=your-clickup-api-token
 ```
 ✅ **Already configured** - this is working in your existing system!
 

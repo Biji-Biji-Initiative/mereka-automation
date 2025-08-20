@@ -21,7 +21,7 @@ Write-Host "`n🧪 Testing MCP Servers..." -ForegroundColor Yellow
 
 # Test ClickUp MCP
 Write-Host "   Testing ClickUp MCP server..." -ForegroundColor Gray
-$env:CLICKUP_API_TOKEN = "pk_66733245_76BVBTVC88U8QUMWSOAW9FDRTXZ28H15"
+$env:CLICKUP_API_TOKEN = "$env:CLICKUP_API_TOKEN"
 $env:CLICKUP_TEAM_ID = "2627356"
 
 try {

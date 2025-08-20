@@ -149,7 +149,7 @@ async function createTaskViaMCPProcess(taskData) {
     const mcp = spawn('npx', ['-y', 'clickup-mcp-server'], {
       env: {
         ...process.env,
-        CLICKUP_API_TOKEN: 'pk_66733245_76BVBTVC88U8QUMWSOAW9FDRTXZ28H15',
+        CLICKUP_API_TOKEN: 'process.env.CLICKUP_API_TOKEN',
         CLICKUP_TEAM_ID: '2627356'
       }
     });

@@ -106,7 +106,7 @@ async function demonstrateMCPClickUpIntegration() {
   
   console.log('🔧 MCP Configuration Status:');
   console.log('• Server: npx -y clickup-mcp-server');
-  console.log('• Token: pk_66733245_76BVBTVC88U8QUMWSOAW9FDRTXZ28H15');
+  console.log('• Token: process.env.CLICKUP_API_TOKEN');
   console.log('• Team ID: 2627356 (Mereka)');
   console.log('• Target List: All bugs (ID: 900501824745)');
   

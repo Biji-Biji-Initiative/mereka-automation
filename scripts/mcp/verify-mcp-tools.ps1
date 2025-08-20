@@ -4,7 +4,7 @@ Write-Host "=========================" -ForegroundColor Cyan
 
 # Test ClickUp API
 Write-Host "`n✅ Testing ClickUp..." -ForegroundColor Green
-$clickupHeaders = @{"Authorization" = "pk_66733245_76BVBTVC88U8QUMWSOAW9FDRTXZ28H15"}
+$clickupHeaders = @{"Authorization" = $env:CLICKUP_API_TOKEN}
 $clickupResponse = Invoke-RestMethod -Uri "https://api.clickup.com/api/v2/team" -Headers $clickupHeaders -ErrorAction SilentlyContinue
 if ($clickupResponse) {
     Write-Host "   ✓ ClickUp: Connected to '$($clickupResponse.teams[0].name)'" -ForegroundColor Green

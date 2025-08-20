@@ -26,7 +26,7 @@ Value: sk-your-actual-openai-api-key
 ### **2. CLICKUP_API_TOKEN** ✅ (You already have this)
 ```
 Name: CLICKUP_API_TOKEN
-Value: pk_66733245_76BVBTVC88U8QUMWSOAW9FDRTXZ28H15
+Value: your-clickup-api-token
 ```
 **Status:** ✅ Already working in your existing system
 
@@ -57,7 +57,7 @@ Value: your-github-personal-access-token
 ## 🚀 **Quick Setup Checklist**
 
 - [ ] **OPENAI_API_KEY** - Get from OpenAI platform
-- [x] **CLICKUP_API_TOKEN** - Already have: `pk_66733245_76BVBTVC88U8QUMWSOAW9FDRTXZ28H15`
+- [x] **CLICKUP_API_TOKEN** - Already have: `your-clickup-api-token`
 - [x] **SLACK_TOKEN** - Already have: `xoxp-1030870860245-...`
 - [x] **SLACK_CHANNEL** - Already have: `C02GDJUE8LW`
 - [ ] **GITHUB_TOKEN** - Optional for GitHub integration

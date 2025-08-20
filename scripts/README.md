@@ -70,9 +70,6 @@ General-purpose scripts that don't fit specific categories:
 - `check-workflows.ps1` - Workflow verification
 - `create-complete-prd.js` - PRD generation
 - `create-test-task-and-notify.ps1` - Task creation with notifications
-- `search-job-tasks-api.ps1` - Job search via API
-- `search-job-tasks-simple.ps1` - Simple job search
-- `search-job-tasks.ps1` - Advanced job search
 - `README.md` - This documentation file
 
 ## Usage Guidelines
