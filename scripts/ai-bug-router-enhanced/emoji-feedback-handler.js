@@ -3,10 +3,16 @@
  * Handles team reactions for AI decision overrides
  */
 
+const fetch = require('node-fetch');
+const { TicketRevisionSystem } = require('./ticket-revision-system.js');
+
 class EmojiFeedbackHandler {
   constructor(clickupApiKey, slackToken) {
-    this.clickupApiKey = clickupApiKey;
+    this.clickupToken = clickupApiKey;
     this.slackToken = slackToken;
+    
+    // Initialize ticket revision system
+    this.revisionSystem = new TicketRevisionSystem(clickupApiKey, slackToken);
     
     this.feedbackEmojis = {
       // ESCALATION: Override AI decision, treat as urgent bug
@@ -28,6 +34,35 @@ class EmojiFeedbackHandler {
         action: 'retrain_ai_with_this_example',
         description: 'Use this example to improve AI classification',
         workflow: 'add_to_training_dataset'
+      },
+
+      // TICKET REVISION EMOJIS (NEW!)
+      // REVISE EXISTING TICKET: Re-analyze and update current ticket
+      '🔧': {
+        action: 'revise_existing_ticket',
+        description: 'AI got it wrong - please revise this ticket with correct understanding',
+        workflow: 'reanalyze_and_update_ticket'
+      },
+
+      // EDIT DESCRIPTION: Update ticket description only
+      '📝': {
+        action: 'edit_ticket_description',
+        description: 'Update the ticket description with additional context',
+        workflow: 'update_description_only'
+      },
+
+      // CHANGE CATEGORY: Reclassify ticket type
+      '🏷️': {
+        action: 'change_ticket_category',
+        description: 'This ticket is in wrong category - reclassify it',
+        workflow: 'reclassify_ticket_type'
+      },
+
+      // MARK INVALID: Close ticket as invalid
+      '❌': {
+        action: 'mark_ticket_invalid',
+        description: 'This ticket should not have been created - mark as invalid',
+        workflow: 'close_as_invalid'
       }
     };
 
@@ -96,6 +131,23 @@ class EmojiFeedbackHandler {
         
         case 'retrain_ai_with_this_example':
           result = await this.executeAIRetrainingWorkflow(issueTracking, feedbackUser, channel);
+          break;
+
+        // NEW: Ticket revision actions
+        case 'revise_existing_ticket':
+          result = await this.revisionSystem.processTicketRevision(originalMessage, '🔧', feedbackUser, channel);
+          break;
+        
+        case 'edit_ticket_description':
+          result = await this.revisionSystem.processTicketRevision(originalMessage, '📝', feedbackUser, channel);
+          break;
+        
+        case 'change_ticket_category':
+          result = await this.revisionSystem.processTicketRevision(originalMessage, '🏷️', feedbackUser, channel);
+          break;
+        
+        case 'mark_ticket_invalid':
+          result = await this.revisionSystem.processTicketRevision(originalMessage, '❌', feedbackUser, channel);
           break;
         
         default:
@@ -266,7 +318,7 @@ This case should be added to training data to improve future classifications.`,
       tags: ['human-override', 'urgent', 'ai-misclassification']
     };
 
-    const clickupResponse = await this.createClickUpTask(ticketData);
+    const clickupResponse = await this.createClickUpTask('900501824745', ticketData);
     
     console.log(`🎫 Created urgent override ticket: ${clickupResponse.id}`);
     return clickupResponse;
@@ -308,7 +360,7 @@ Educational response has been provided to the user. No code changes are required
       tags: ['user-education', 'not-a-bug', 'support']
     };
 
-    const clickupResponse = await this.createClickUpTask(ticketData);
+    const clickupResponse = await this.createClickUpTask('900501824745', ticketData);
     
     console.log(`🎫 Created user support ticket: ${clickupResponse.id}`);
     return clickupResponse;
@@ -318,16 +370,16 @@ Educational response has been provided to the user. No code changes are required
    * Send escalation notification to development team
    */
   async sendEscalationNotification(channel, issueTracking, urgentTicket, feedbackUser) {
-    const message = `🚨 **URGENT: AI Classification Override**
+    const message = `🚨 URGENT: AI Classification Override
 
-👤 **Override by:** <@${feedbackUser}>
-🎫 **Urgent Ticket:** ${urgentTicket.url}
-🔗 **Original Issue:** ${issueTracking?.slack_url || 'Link not available'}
+👤 Override by: <@${feedbackUser}>
+🎫 Urgent Ticket: ${urgentTicket.url}
+🔗 Original Issue: ${issueTracking?.slack_url || 'Link not available'}
 
-**What happened:**
+What happened:
 AI classified this as "${issueTracking?.ai_classification || 'unknown'}" but team member identified it as a real bug requiring immediate attention.
 
-**Action taken:**
+Action taken:
 - Created urgent ClickUp ticket with highest priority
 - Triggered AI code generation workflow
 - Added to training data for future improvement
@@ -346,34 +398,34 @@ AI classified this as "${issueTracking?.ai_classification || 'unknown'}" but tea
 
     switch (action) {
       case 'escalate_issue':
-        message = `✅ **Issue Escalated Successfully**
+        message = `✅ Issue Escalated Successfully
 
-🎫 **Urgent Ticket:** ${result.ticket.url}
-👤 **Escalated by:** <@${feedbackUser}>
-🚀 **Status:** AI code generation started
-⏱️ **Priority:** URGENT
+🎫 Urgent Ticket: ${result.ticket.url}
+👤 Escalated by: <@${feedbackUser}>
+🚀 Status: AI code generation started
+⏱️ Priority: URGENT
 
 The development team has been notified! 🔔`;
         break;
 
       case 'convert_to_user_support':
-        message = `✅ **Converted to User Support**
+        message = `✅ Converted to User Support
 
-🎫 **Support Ticket:** ${result.ticket.url}
-👤 **Converted by:** <@${feedbackUser}>
-📚 **Action:** Educational response provided
-💡 **Type:** User help (not a bug)
+🎫 Support Ticket: ${result.ticket.url}
+👤 Converted by: <@${feedbackUser}>
+📚 Action: Educational response provided
+💡 Type: User help (not a bug)
 
 User will receive helpful guidance! 🤗`;
         break;
 
       case 'retrain_ai_with_this_example':
-        message = `✅ **Added to AI Training Dataset**
+        message = `✅ Added to AI Training Dataset
 
-🎫 **Review Ticket:** ${result.reviewTicket.url}
-👤 **Added by:** <@${feedbackUser}>
-🤖 **Purpose:** Improve AI classification accuracy
-📊 **Status:** Pending human review for training
+🎫 Training Task: ${result.trainingData?.clickup_url || result.reviewTicket.url}
+👤 Added by: <@${feedbackUser}>
+🤖 Purpose: Improve AI classification accuracy
+📊 Status: Ready for training review
 
 AI will learn from this example! 🧠`;
         break;
@@ -412,18 +464,71 @@ AI will learn from this example! 🧠`;
     };
   }
 
-  async createClickUpTask(taskData) {
-    // Implementation for creating ClickUp task
+  async createClickUpTask(listId, taskData) {
     console.log('🎫 Creating ClickUp task...');
-    return {
-      id: 'mock_ticket_id',
-      url: 'https://app.clickup.com/t/mock_ticket_id'
-    };
+    
+    try {
+      const response = await fetch(`https://api.clickup.com/api/v2/list/${listId}/task`, {
+        method: 'POST',
+        headers: {
+          'Authorization': this.clickupToken,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(taskData)
+      });
+
+      if (!response.ok) {
+        throw new Error(`ClickUp API Error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ ClickUp task created:', result.id);
+      
+      return {
+        id: result.id,
+        url: result.url || `https://app.clickup.com/t/${result.id}`
+      };
+    } catch (error) {
+      console.error('❌ Failed to create ClickUp task:', error);
+      throw error;
+    }
   }
 
-  async sendSlackMessage(channel, text) {
+  async sendSlackMessage(channel, text, threadTs = null) {
     console.log(`💬 Sending Slack message to ${channel}:`, text.substring(0, 100) + '...');
-    return true;
+    
+    try {
+      const body = {
+        channel: channel,
+        text: text
+      };
+
+      if (threadTs) {
+        body.thread_ts = threadTs;
+      }
+
+      const response = await fetch('https://slack.com/api/chat.postMessage', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${this.slackToken}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(body)
+      });
+
+      const result = await response.json();
+      
+      if (result.ok) {
+        console.log('✅ Slack message sent successfully');
+        return result;
+      } else {
+        console.error('❌ Slack API error:', result.error);
+        throw new Error(`Slack API Error: ${result.error}`);
+      }
+    } catch (error) {
+      console.error('💥 Error sending Slack message:', error);
+      throw error;
+    }
   }
 
   extractTitle(text) {
@@ -444,14 +549,112 @@ AI will learn from this example! 🧠`;
 
   async addToTrainingDataset(example) {
     console.log('🧠 Adding to AI training dataset...');
-    return true;
+    
+    // Create training example task in ClickUp
+    const trainingTask = {
+      name: `[TRAINING] ${example.original_text.substring(0, 50)}...`,
+      description: `🤖 AI TRAINING EXAMPLE
+
+📝 Original Message:
+${example.original_text}
+
+🧠 AI Classification:
+${example.ai_classification}
+
+👤 Human Feedback By: ${example.feedback_user}
+⏰ Added: ${new Date(example.feedback_timestamp).toLocaleString()}
+
+📊 Confidence Score: ${example.confidence || 'Unknown'}
+
+📍 Context:
+- Channel: ${example.context.channel || 'Unknown'}
+- User: ${example.context.user || 'Unknown'}
+
+🎯 Training Notes:
+This example was flagged by a human for AI training improvement. Review this classification and use it to enhance the AI model's understanding.
+
+🔄 Next Steps:
+1. Review AI classification accuracy
+2. Identify areas for model improvement  
+3. Add to training dataset
+4. Update AI classification rules if needed`,
+      assignees: [66733245],
+      priority: 3,
+      tags: ['ai-training', 'human-feedback']
+    };
+
+    try {
+      const response = await this.createClickUpTask('901610583307', trainingTask);
+      console.log('✅ Training example created in ClickUp:', response.id);
+      
+      // Return the created task info
+      return {
+        success: true,
+        clickup_task_id: response.id,
+        clickup_url: response.url || `https://app.clickup.com/t/${response.id}`,
+        training_data: example
+      };
+      
+    } catch (error) {
+      console.error('❌ Failed to create training task:', error);
+      // Fallback to console logging if ClickUp fails
+      console.log('📊 Training example (fallback):', JSON.stringify(example, null, 2));
+      return {
+        success: false,
+        error: error.message,
+        training_data: example
+      };
+    }
   }
 
   async createTrainingReviewTicket(issueTracking, feedbackUser) {
-    return {
-      id: 'training_review_id',
-      url: 'https://app.clickup.com/t/training_review_id'
+    const reviewTask = {
+      name: `[REVIEW] Training Example - ${issueTracking.slack_text.substring(0, 40)}...`,
+      description: `👥 TRAINING REVIEW REQUIRED
+
+📊 Training Example Added By: ${feedbackUser}
+
+🧠 Original AI Classification:
+${issueTracking.ai_classification}
+
+📝 Original Message:
+${issueTracking.slack_text}
+
+📍 Context:
+- Channel: ${issueTracking.slack_channel}  
+- User: ${issueTracking.slack_user}
+- Confidence: ${issueTracking.confidence || 'Unknown'}
+
+🎯 Review Tasks:
+- Verify AI classification accuracy
+- Determine correct classification
+- Update training dataset if needed
+- Improve classification rules
+- Test updated model
+
+⏰ Added for Training: ${new Date().toLocaleString()}`,
+      assignees: [66733245],
+      priority: 2,
+      tags: ['training-review', 'human-feedback', 'ai-improvement']
     };
+
+    try {
+      const response = await this.createClickUpTask('901610583307', reviewTask);
+      console.log('✅ Training review ticket created:', response.id);
+      
+      return {
+        id: response.id,
+        url: response.url || `https://app.clickup.com/t/${response.id}`
+      };
+      
+    } catch (error) {
+      console.error('❌ Failed to create review ticket:', error);
+      return {
+        id: `review_${Date.now()}`,
+        url: 'https://app.clickup.com/t/training_review_fallback',
+        error: error.message
+      };
+    }
   }
 
   async triggerCodeGenerationWorkflow(ticket) {
