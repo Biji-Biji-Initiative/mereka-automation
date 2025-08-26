@@ -419,7 +419,10 @@ async function getSlackMessage(channel, messageTs) {
     }
     
   } catch (error) {
-    console.error('💥 Error retrieving Slack message:', error);
+    console.error('💥 Error retrieving Slack message:', {
+      message: error.message,
+      type: error.name
+    });
     return null;
   }
 }
@@ -464,7 +467,10 @@ async function postSlackResponse(channel, message, threadTs = null) {
     return result;
     
   } catch (error) {
-    console.error('💥 Failed to send Slack response:', error);
+    console.error('💥 Failed to send Slack response:', {
+      message: error.message,
+      type: error.name
+    });
   }
 }
 
@@ -490,7 +496,10 @@ exports.healthCheck = async (req, res) => {
     return res.status(200).json(status);
     
   } catch (error) {
-    console.error('💥 Health check failed:', error);
+    console.error('💥 Health check failed:', {
+      message: error.message,
+      type: error.name
+    });
     return res.status(500).json({ 
       status: 'unhealthy', 
       error: error.message 
