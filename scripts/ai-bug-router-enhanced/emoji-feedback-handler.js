@@ -510,7 +510,7 @@ AI will learn from this example! 🧠`;
       const response = await fetch('https://slack.com/api/chat.postMessage', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.slackToken}`,
+          'Authorization': `Bearer ${this.slackToken?.trim()}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(body)

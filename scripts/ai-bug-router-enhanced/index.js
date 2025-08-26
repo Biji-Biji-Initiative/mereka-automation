@@ -240,10 +240,16 @@ async function handleReactionEvent(event, res) {
  */
 async function getSlackMessage(channel, timestamp) {
   try {
+    // Validate token exists and is properly formatted
+    const slackToken = process.env.SLACK_TOKEN?.trim();
+    if (!slackToken || !slackToken.startsWith('xoxb-')) {
+      throw new Error('Invalid or missing SLACK_TOKEN');
+    }
+    
     const response = await fetch(`https://slack.com/api/conversations.history`, {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.SLACK_TOKEN}`,
+        'Authorization': `Bearer ${slackToken}`,
         'Content-Type': 'application/x-www-form-urlencoded'
       },
       body: new URLSearchParams({
@@ -263,7 +269,10 @@ async function getSlackMessage(channel, timestamp) {
     console.error('❌ Failed to retrieve Slack message:', data.error);
     return null;
   } catch (error) {
-    console.error('❌ Error retrieving Slack message:', error);
+    console.error('❌ Error retrieving Slack message:', {
+      message: error.message,
+      status: error.status
+    }); // Don't log the full error to avoid token exposure
     return null;
   }
 }
@@ -273,6 +282,12 @@ async function getSlackMessage(channel, timestamp) {
  */
 async function createClickUpBugReport(message, channel, reportedBy) {
   try {
+    // Validate token exists and is properly formatted
+    const clickupToken = process.env.CLICKUP_TOKEN?.trim();
+    if (!clickupToken || !clickupToken.startsWith('pk_')) {
+      throw new Error('Invalid or missing CLICKUP_TOKEN');
+    }
+    
     console.log('📝 Creating ClickUp bug report...');
     
     // Format the bug report
@@ -305,7 +320,7 @@ ${message.text}
     const response = await fetch('https://api.clickup.com/api/v2/list/900501824745/task', {
       method: 'POST',
       headers: {
-        'Authorization': process.env.CLICKUP_TOKEN,
+        'Authorization': clickupToken,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify(bugReport)
@@ -330,10 +345,16 @@ ${message.text}
  */
 async function postSlackResponse(channel, message, threadTs = null) {
   try {
+    // Validate token exists and is properly formatted
+    const slackToken = process.env.SLACK_TOKEN?.trim();
+    if (!slackToken || !slackToken.startsWith('xoxb-')) {
+      throw new Error('Invalid or missing SLACK_TOKEN');
+    }
+    
     const response = await fetch('https://slack.com/api/chat.postMessage', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${process.env.SLACK_TOKEN}`,
+        'Authorization': `Bearer ${slackToken}`,
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
