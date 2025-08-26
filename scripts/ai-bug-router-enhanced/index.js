@@ -63,10 +63,12 @@ exports.handleSlackWebhook = async (req, res) => {
     return res.status(200).send('OK');
 
   } catch (error) {
-    console.error('💥 Webhook error:', error);
+    console.error('💥 Webhook error:', {
+      message: error.message,
+      type: error.name
+    });
     return res.status(500).json({ 
       error: 'Internal server error',
-      message: error.message,
       timestamp: new Date().toISOString()
     });
   }
@@ -107,8 +109,11 @@ async function handleMessageEvent(event, res) {
     return res.status(200).send('Message processed (no action required)');
 
   } catch (error) {
-    console.error('💥 Message processing error:', error);
-    return res.status(500).json({ error: error.message });
+    console.error('💥 Message processing error:', {
+      message: error.message,
+      type: error.name
+    });
+    return res.status(500).json({ error: 'Message processing failed' });
   }
 }
 
@@ -230,8 +235,11 @@ async function handleReactionEvent(event, res) {
     return res.status(200).send('Reaction processed (no action required)');
 
   } catch (error) {
-    console.error('💥 Reaction processing error:', error);
-    return res.status(500).json({ error: error.message });
+    console.error('💥 Reaction processing error:', {
+      message: error.message,
+      type: error.name
+    });
+    return res.status(500).json({ error: 'Reaction processing failed' });
   }
 }
 
@@ -241,7 +249,7 @@ async function handleReactionEvent(event, res) {
 async function getSlackMessage(channel, timestamp) {
   try {
     // Validate token exists and is properly formatted
-    const slackToken = process.env.SLACK_TOKEN?.trim();
+    const slackToken = process.env.SLACK_TOKEN?.trim().replace(/[^\w-]/g, '');
     if (!slackToken || !slackToken.startsWith('xoxb-')) {
       throw new Error('Invalid or missing SLACK_TOKEN');
     }
@@ -283,7 +291,7 @@ async function getSlackMessage(channel, timestamp) {
 async function createClickUpBugReport(message, channel, reportedBy) {
   try {
     // Validate token exists and is properly formatted
-    const clickupToken = process.env.CLICKUP_TOKEN?.trim();
+    const clickupToken = process.env.CLICKUP_TOKEN?.trim().replace(/[^\w-]/g, '');
     if (!clickupToken || !clickupToken.startsWith('pk_')) {
       throw new Error('Invalid or missing CLICKUP_TOKEN');
     }
@@ -335,8 +343,11 @@ ${message.text}
     return result;
     
   } catch (error) {
-    console.error('❌ Failed to create ClickUp bug report:', error);
-    throw error;
+    console.error('❌ Failed to create ClickUp bug report:', {
+      message: error.message,
+      status: error.status
+    });
+    throw new Error('Failed to create ClickUp bug report');
   }
 }
 
@@ -346,7 +357,7 @@ ${message.text}
 async function postSlackResponse(channel, message, threadTs = null) {
   try {
     // Validate token exists and is properly formatted
-    const slackToken = process.env.SLACK_TOKEN?.trim();
+    const slackToken = process.env.SLACK_TOKEN?.trim().replace(/[^\w-]/g, '');
     if (!slackToken || !slackToken.startsWith('xoxb-')) {
       throw new Error('Invalid or missing SLACK_TOKEN');
     }
@@ -372,8 +383,11 @@ async function postSlackResponse(channel, message, threadTs = null) {
     }
     return data;
   } catch (error) {
-    console.error('❌ Error sending Slack response:', error);
-    throw error;
+    console.error('❌ Error sending Slack response:', {
+      message: error.message,
+      type: error.name
+    });
+    throw new Error('Failed to send Slack response');
   }
 }
 

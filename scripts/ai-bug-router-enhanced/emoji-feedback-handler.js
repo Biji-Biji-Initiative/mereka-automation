@@ -161,8 +161,11 @@ class EmojiFeedbackHandler {
       return result;
 
     } catch (error) {
-      console.error(`❌ Error processing feedback:`, error);
-      await this.sendErrorNotification(channel, feedbackConfig, error, feedbackUser);
+      console.error(`❌ Error processing feedback:`, {
+        message: error.message,
+        action: action
+      });
+      await this.sendErrorNotification(channel, feedbackConfig, error.message, feedbackUser);
     }
   }
 
@@ -489,8 +492,11 @@ AI will learn from this example! 🧠`;
         url: result.url || `https://app.clickup.com/t/${result.id}`
       };
     } catch (error) {
-      console.error('❌ Failed to create ClickUp task:', error);
-      throw error;
+      console.error('❌ Failed to create ClickUp task:', {
+        message: error.message,
+        status: error.status
+      });
+      throw new Error('Failed to create ClickUp task');
     }
   }
 
@@ -526,8 +532,11 @@ AI will learn from this example! 🧠`;
         throw new Error(`Slack API Error: ${result.error}`);
       }
     } catch (error) {
-      console.error('💥 Error sending Slack message:', error);
-      throw error;
+      console.error('💥 Error sending Slack message:', {
+        message: error.message,
+        type: error.name
+      });
+      throw new Error('Failed to send Slack message');
     }
   }
 
@@ -596,7 +605,10 @@ This example was flagged by a human for AI training improvement. Review this cla
       };
       
     } catch (error) {
-      console.error('❌ Failed to create training task:', error);
+      console.error('❌ Failed to create training task:', {
+        message: error.message,
+        status: error.status
+      });
       // Fallback to console logging if ClickUp fails
       console.log('📊 Training example (fallback):', JSON.stringify(example, null, 2));
       return {
@@ -648,7 +660,10 @@ ${issueTracking.slack_text}
       };
       
     } catch (error) {
-      console.error('❌ Failed to create review ticket:', error);
+      console.error('❌ Failed to create review ticket:', {
+        message: error.message,
+        status: error.status
+      });
       return {
         id: `review_${Date.now()}`,
         url: 'https://app.clickup.com/t/training_review_fallback',
