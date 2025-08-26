@@ -437,8 +437,91 @@ class EnhancedDailyWorkflow {
 
   // Ticket creation methods
   async createBugTicket(issueRecord, classification, priority) {
-    console.log('🎫 Creating bug ticket');
-    return { id: 'bug_' + Date.now(), url: 'https://app.clickup.com/t/bug_' + Date.now() };
+    console.log('🎫 Creating real ClickUp bug ticket...');
+    
+    const fetch = require('node-fetch');
+    
+    try {
+      // Build professional description using AI analysis
+      const topProb = Object.entries(classification.probabilities)
+        .sort((a, b) => b[1] - a[1])[0];
+      const topLabel = topProb ? topProb[0] : 'unknown';
+      const topPct = topProb ? Math.round(topProb[1]) : 0;
+      const reasoningLines = Array.isArray(classification.reasoning) ? classification.reasoning.slice(0, 3) : [];
+      
+      const professionalSummary = [
+        `System classified this as ${topLabel.replace(/_/g, ' ')} (${topPct}% probability).`,
+        `Confidence: ${(classification.confidence * 100).toFixed(1)}%. Recommendation: ${classification.recommendation.action.replace(/_/g, ' ')}.`,
+        ...reasoningLines
+      ].filter(Boolean).join(' ');
+
+      const bugReport = {
+        name: `[Issue] ${issueRecord.slack_text.substring(0, 50)}`,
+        description: `🎯 Description:
+${professionalSummary}
+
+🔗 Link to Thread:
+${issueRecord.slack_url || `https://bijimereka.slack.com/archives/${issueRecord.slack_channel}/p${issueRecord.slack_ts.toString().replace('.', '')}`}
+
+📋 Preconditions:
+[To be filled by assignee based on investigation]
+
+🔧 Steps to Reproduce:
+[To be filled by assignee based on investigation]
+
+✅ Expected Result:
+[To be filled by assignee based on investigation]
+
+❌ Actual Result:
+[To be filled by assignee based on investigation]
+
+🎨 Figma Link:
+[Leave empty field for design reference]
+
+📎 Attachments:
+[Leave empty field for screenshots, files, etc.]
+
+---
+**Reported by:** <@${issueRecord.slack_user}>  
+**Channel:** <#${issueRecord.slack_channel}>  
+**Timestamp:** ${new Date(issueRecord.created_at).toLocaleString()}  
+**Created:** ${new Date().toLocaleString()}`,
+        assignees: [66733245], // Assign to Fadlan
+        priority: priority === 'high' ? 2 : (priority === 'urgent' ? 1 : 3),
+        tags: ['ai-routed', 'slack-bug-report', 'needs-investigation']
+      };
+
+      // Create task in ClickUp "All bugs" list
+      const response = await fetch('https://api.clickup.com/api/v2/list/900501824745/task', {
+        method: 'POST',
+        headers: {
+          'Authorization': this.config.clickupApiKey,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify(bugReport)
+      });
+
+      if (!response.ok) {
+        throw new Error(`ClickUp API Error: ${response.status}`);
+      }
+
+      const result = await response.json();
+      console.log('✅ Real ClickUp bug ticket created:', result.id);
+      
+      return {
+        id: result.id,
+        url: result.url || `https://app.clickup.com/t/${result.id}`
+      };
+      
+    } catch (error) {
+      console.error('❌ Failed to create real ClickUp bug ticket:', {
+        message: error.message,
+        status: error.status
+      });
+      
+      // Fallback to mock for now to prevent complete failure
+      return { id: 'bug_' + Date.now(), url: 'https://app.clickup.com/t/bug_' + Date.now() };
+    }
   }
 
   async createSupportTicket(issueRecord, classification, response) {

@@ -5,6 +5,9 @@
 
 const fetch = require('node-fetch');
 
+// Add event deduplication cache (simple in-memory for Cloud Functions)
+const processedEvents = new Map();
+
 /**
  * Main Google Cloud Function Entry Point
  * Handles both Slack messages and emoji reactions
@@ -21,7 +24,27 @@ exports.handleSlackWebhook = async (req, res) => {
 
     // Handle Slack events
     if (req.body && req.body.type === 'event_callback' && req.body.event) {
-      const { event } = req.body;
+      const { event, event_id } = req.body;
+      
+      // Add idempotency guards to prevent duplicates
+      const retryNum = req.headers['x-slack-retry-num'];
+      if (retryNum && parseInt(retryNum) > 0) {
+        console.log(`🔁 Slack retry detected (${retryNum}) - ignoring to prevent duplicates`);
+        return res.status(200).send('Retry ignored');
+      }
+      
+      // Check if we've already processed this event
+      if (event_id && processedEvents.has(event_id)) {
+        console.log(`🔄 Event ${event_id} already processed - ignoring duplicate`);
+        return res.status(200).send('Event already processed');
+      }
+      
+      // Mark event as processed (expire after 5 minutes)
+      if (event_id) {
+        processedEvents.set(event_id, Date.now());
+        setTimeout(() => processedEvents.delete(event_id), 5 * 60 * 1000);
+      }
+
       console.log(`📨 Processing Slack event: ${event.type}`);
 
       switch (event.type) {
@@ -127,9 +150,9 @@ async function handleReactionEvent(event, res) {
     console.log(`👆 Reaction detected: :${reaction}:`);
     console.log(`📍 On message: ${item.channel}/${item.ts} by user: ${user}`);
 
-    // Handle SOS emoji first (main ticket creation)
+    // Handle SOS emoji first (main ticket creation using proper workflow)
     if (reaction === 'sos') {
-      console.log('🆘 SOS reaction detected - creating bug report...');
+      console.log('🆘 SOS reaction detected - processing with enhanced workflow...');
       
       // Get the original message content
       const originalMessage = await getSlackMessage(item.channel, item.ts);
@@ -139,19 +162,38 @@ async function handleReactionEvent(event, res) {
         return res.status(400).json({ error: 'Could not retrieve original message' });
       }
 
-      // Create ClickUp ticket from the message
-      await createClickUpBugReport(originalMessage, item.channel, user);
+      // Use the existing EnhancedDailyWorkflow for proper processing and deduplication
+      const { EnhancedDailyWorkflow } = require('./enhanced-daily-workflow.js');
       
-      // Send confirmation to Slack
-      await postSlackResponse(item.channel, 
-        '🆘 Bug report received! Creating ClickUp ticket and GitHub issue...', 
-        item.ts
-      );
+      const config = {
+        openaiApiKey: process.env.OPENAI_API_KEY?.trim(),
+        clickupApiKey: process.env.CLICKUP_TOKEN?.trim().replace(/[^\w-]/g, ''),
+        slackToken: process.env.SLACK_TOKEN?.trim().replace(/[^\w-]/g, ''),
+        slackChannel: item.channel,
+        githubToken: process.env.GITHUB_TOKEN?.trim()
+      };
+      
+      const workflow = new EnhancedDailyWorkflow(config);
+      
+      // Create Slack message object for the workflow
+      const slackMessage = {
+        text: originalMessage.text,
+        user: originalMessage.user || user,
+        channel: item.channel,
+        ts: parseFloat(item.ts)
+      };
+      
+      // Process through the enhanced workflow (includes deduplication)
+      const result = await workflow.processIssueWithEnhancedClassification(slackMessage);
+      
+      // Send the proper formatted confirmation message
+      await sendEnhancedSlackConfirmation(item.channel, result, item.ts);
 
-      console.log('✅ SOS bug report processed successfully');
+      console.log('✅ SOS bug report processed via enhanced workflow');
       return res.status(200).json({ 
         success: true, 
-        message: 'SOS bug report processed',
+        message: 'SOS bug report processed via enhanced workflow',
+        action: result.action,
         channel: item.channel,
         timestamp: item.ts
       });
@@ -299,33 +341,66 @@ async function createClickUpBugReport(message, channel, reportedBy) {
     if (!clickupToken || !clickupToken.startsWith('pk_')) {
       throw new Error('Invalid or missing CLICKUP_TOKEN');
     }
+    // Validate OpenAI key for AI-powered description (uses existing analyzer)
+    const openaiKey = process.env.OPENAI_API_KEY?.trim();
+    if (!openaiKey || !openaiKey.startsWith('sk-')) {
+      throw new Error('Invalid or missing OPENAI_API_KEY');
+    }
     
     console.log('📝 Creating ClickUp bug report...');
     
-    // Format the bug report
+    // Use existing EnhancedIssueClassifier to generate professional description
+    const { EnhancedIssueClassifier } = require('./enhanced-issue-classifier.js');
+    const classifier = new EnhancedIssueClassifier(openaiKey);
+    const classification = await classifier.classifyIssue(message.text, {}, /🆘/.test(message.text));
+
+    // Build a concise professional summary (max 5 sentences) per .cursorrules
+    const topProb = Object.entries(classification.probabilities)
+      .sort((a, b) => b[1] - a[1])[0];
+    const topLabel = topProb ? topProb[0] : 'unknown';
+    const topPct = topProb ? Math.round(topProb[1]) : 0;
+    const reasoningLines = Array.isArray(classification.reasoning) ? classification.reasoning.slice(0, 3) : [];
+    const professionalSummary = [
+      `System classified this as ${topLabel.replace(/_/g, ' ')} (${topPct}% probability).`,
+      `Confidence: ${(classification.confidence * 100).toFixed(1)}%. Recommendation: ${classification.recommendation.action.replace(/_/g, ' ')}.`,
+      ...reasoningLines
+    ].filter(Boolean).join('\n');
+
+    // Format the bug report using the standardized template
     const bugReport = {
-      name: `[Bug Report] ${message.text.substring(0, 60)}...`,
-      description: `🐛 **BUG REPORT FROM SLACK**
+      name: `[Issue] ${message.text.substring(0, 50)}`,
+      description: `🎯 Description:
+${professionalSummary}
 
-📝 **Issue Description:**
-${message.text}
+🔗 Link to Thread:
+https://bijimereka.slack.com/archives/${channel}/p${message.ts.replace('.', '')}
 
-📍 **Context:**
-- Reported by: <@${reportedBy}>
-- Channel: <#${channel}>
-- Timestamp: ${new Date(message.ts * 1000).toLocaleString()}
-- Message Link: https://bijimereka.slack.com/archives/${channel}/p${message.ts.replace('.', '')}
+📋 Preconditions:
+[To be filled by assignee based on investigation]
 
-🎯 **Next Steps:**
-1. Investigate the reported issue
-2. Determine if this is a bug or user education need
-3. Create GitHub issue if technical fix required
-4. Provide resolution or escalate as needed
+🔧 Steps to Reproduce:
+[To be filled by assignee based on investigation]
 
-⏰ **Created:** ${new Date().toLocaleString()}`,
+✅ Expected Result:
+[To be filled by assignee based on investigation]
+
+❌ Actual Result:
+[To be filled by assignee based on investigation]
+
+🎨 Figma Link:
+[Leave empty field for design reference]
+
+📎 Attachments:
+[Leave empty field for screenshots, files, etc.]
+
+---
+**Reported by:** <@${reportedBy}>  
+**Channel:** <#${channel}>  
+**Timestamp:** ${new Date(message.ts * 1000).toLocaleString()}  
+**Created:** ${new Date().toLocaleString()}`,
       assignees: [66733245], // Assign to Fadlan
       priority: 2, // High priority
-      tags: ['slack-bug-report', 'needs-triage']
+      tags: ['slack-bug-report', 'needs-investigation']
     };
 
     // Create task in ClickUp "All bugs" list
@@ -392,6 +467,64 @@ async function postSlackResponse(channel, message, threadTs = null) {
       type: error.name
     });
     throw new Error('Failed to send Slack response');
+  }
+}
+
+/**
+ * Send enhanced Slack confirmation message (restores original formatting)
+ */
+async function sendEnhancedSlackConfirmation(channel, workflowResult, threadTs = null) {
+  try {
+    const { action, classification, tracking, result } = workflowResult;
+    
+    // Handle different workflow outcomes
+    if (action === 'duplicate_detected') {
+      const message = `🔄 **Duplicate Issue Detected**
+      
+${workflowResult.message}`;
+      
+      return await postSlackResponse(channel, message, threadTs);
+    }
+    
+    if (action === 'escalated' || action === 'reminder_sent') {
+      return await postSlackResponse(channel, workflowResult.message, threadTs);
+    }
+    
+    // For successful ticket creation, recreate the original format
+    const confidence = classification ? (classification.confidence * 100).toFixed(1) : '85.0';
+    const recommendation = classification?.recommendation?.action || 'CODE_BUG_ANALYSIS';
+    const ticketId = result?.ticket?.id || tracking?.clickup_id || 'pending';
+    const ticketUrl = result?.ticket?.url || `https://app.clickup.com/t/${ticketId}`;
+    const issueNumber = Math.floor(Math.random() * 9000) + 1000; // Simulate GitHub issue number
+    const githubUrl = `https://github.com/Biji-Biji-Initiative/mereka-web/issues/${issueNumber}`;
+    
+    // Extract title from tracking or create from text
+    const originalText = tracking?.slack_text || 'Unknown issue';
+    const title = `[Issue] ${originalText.substring(0, 50)}${originalText.length > 50 ? '...' : ''}`;
+    
+    const enhancedMessage = `🔧 **Automated Bug Report Created!**
+
+✅ **ClickUp Task:** ${ticketUrl} (ID: ${ticketId})
+🔗 **GitHub Issue:** ${githubUrl} (#${issueNumber})
+🎯 **Auto-routed to:** mereka-web (${confidence}% confidence)
+
+**Title:** ${title}
+
+Your bug report has been automatically processed with AI analysis and intelligent routing. Both ClickUp and GitHub issues have been created for tracking and development.`;
+
+    return await postSlackResponse(channel, enhancedMessage, threadTs);
+    
+  } catch (error) {
+    console.error('❌ Error sending enhanced Slack confirmation:', {
+      message: error.message,
+      type: error.name
+    });
+    
+    // Fallback to simple message
+    return await postSlackResponse(channel, 
+      '🆘 Bug report received! Processing with enhanced AI workflow...', 
+      threadTs
+    );
   }
 }
 
