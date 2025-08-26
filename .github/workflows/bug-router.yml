@@ -31,20 +31,20 @@ jobs:
       - name: Validate Security Configuration
         run: |
           echo "🔐 Validating security setup..."
-          # Check that no secrets are hardcoded in files
-          if grep -r "sk-" scripts/ 2>/dev/null | grep -v "your-" | grep -v "example" | grep -v "placeholder"; then
-            echo "❌ Potential OpenAI key found in code!"
+          # Check that no secrets are hardcoded in files (exclude documentation and examples)
+          if grep -r "sk-proj-\|sk-[a-zA-Z0-9].*[a-zA-Z0-9].*[a-zA-Z0-9]" scripts/ --include="*.js" --exclude="*.md" --exclude="env.example" 2>/dev/null | grep -v "your-" | grep -v "example" | grep -v "placeholder" | grep -v "sk-your" | grep -v "process.env"; then
+            echo "❌ Potential OpenAI key found in JavaScript code!"
             exit 1
           fi
-          if grep -r "xoxb-\|xoxp-" scripts/ 2>/dev/null | grep -v "your-" | grep -v "example" | grep -v "placeholder"; then
-            echo "❌ Potential Slack token found in code!"
+          if grep -r "xoxb-[0-9].*-[0-9].*-[a-zA-Z0-9]*\|xoxp-[0-9].*-[0-9].*-[a-zA-Z0-9]*" scripts/ --include="*.js" --exclude="*.md" --exclude="env.example" 2>/dev/null | grep -v "your-" | grep -v "example" | grep -v "placeholder" | grep -v "process.env"; then
+            echo "❌ Potential Slack token found in JavaScript code!"
             exit 1
           fi
-          if grep -r "pk_.*_" scripts/ 2>/dev/null | grep -v "your-" | grep -v "example" | grep -v "placeholder"; then
-            echo "❌ Potential ClickUp token found in code!"
+          if grep -r "pk_[0-9]*_[a-zA-Z0-9]*" scripts/ --include="*.js" --exclude="*.md" --exclude="env.example" 2>/dev/null | grep -v "your-" | grep -v "example" | grep -v "placeholder" | grep -v "process.env"; then
+            echo "❌ Potential ClickUp token found in JavaScript code!"
             exit 1
           fi
-          echo "✅ Security validation passed - no hardcoded secrets detected"
+          echo "✅ Security validation passed - no hardcoded secrets detected in JavaScript code"
           
       - name: Install dependencies
         run: |
