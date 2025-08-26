@@ -304,15 +304,23 @@ class IssueStateTracker {
     const twoDaysAgo = Date.now() - (2 * 24 * 60 * 60 * 1000);
     const threeDaysAgo = Date.now() - (3 * 24 * 60 * 60 * 1000);
 
-    return await this.queryDatabase(`
-      SELECT * FROM issue_tracking 
-      WHERE (
-        (state = 'analyzed' AND created_at < ?) OR
-        (state = 'ticket_created' AND created_at < ?) OR
-        (state = 'pr_created' AND created_at < ?)
-      )
-      AND state NOT IN ('merged', 'closed', 'invalid')
-    `, [twoDaysAgo, oneDayAgo, threeDaysAgo]);
+    try {
+      const results = await this.queryDatabase(`
+        SELECT * FROM issue_tracking 
+        WHERE (
+          (state = 'analyzed' AND created_at < ?) OR
+          (state = 'ticket_created' AND created_at < ?) OR
+          (state = 'pr_created' AND created_at < ?)
+        )
+        AND state NOT IN ('merged', 'closed', 'invalid')
+      `, [twoDaysAgo, oneDayAgo, threeDaysAgo]);
+      
+      // Ensure we always return an array, never null
+      return Array.isArray(results) ? results : [];
+    } catch (error) {
+      console.error('⚠️ Error getting stuck issues:', error);
+      return []; // Return empty array on error
+    }
   }
 
   // Helper methods
@@ -341,7 +349,10 @@ class IssueStateTracker {
   async queryDatabase(query, params) {
     // In real implementation, this would use SQLite or another database
     console.log('🗄️ Database query:', query.replace(/\s+/g, ' ').trim());
-    return null; // Simulate no results for now
+    
+    // Return empty array instead of null to prevent TypeError
+    // This ensures .length and array methods work properly
+    return []; // ✅ Safe: Returns empty array instead of null
   }
 
   async saveIssueRecord(record) {

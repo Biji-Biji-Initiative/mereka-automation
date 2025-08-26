@@ -11,18 +11,24 @@ const { EmojiFeedbackHandler } = require('./emoji-feedback-handler.js');
 class EnhancedDailyWorkflow {
   constructor(config) {
     this.config = {
-      openaiApiKey: config.openaiApiKey || process.env.OPENAI_API_KEY,
-      clickupApiKey: config.clickupApiKey || process.env.CLICKUP_API_TOKEN,
-      slackToken: config.slackToken || process.env.SLACK_TOKEN,
-      slackChannel: config.slackChannel || process.env.SLACK_CHANNEL,
-      githubToken: config.githubToken || process.env.GITHUB_TOKEN,
-      ...config
+      openaiApiKey: config?.openaiApiKey || process.env.OPENAI_API_KEY,
+      clickupApiKey: config?.clickupApiKey || process.env.CLICKUP_API_TOKEN,
+      slackToken: config?.slackToken || process.env.SLACK_TOKEN,
+      slackChannel: config?.slackChannel || process.env.SLACK_CHANNEL,
+      githubToken: config?.githubToken || process.env.GITHUB_TOKEN,
+      ...(config || {})
     };
 
-    this.classifier = new EnhancedIssueClassifier(this.config.openaiApiKey);
-    this.tracker = new IssueStateTracker();
-    this.educationSystem = new UserEducationSystem();
-    this.feedbackHandler = new EmojiFeedbackHandler(this.config.clickupApiKey, this.config.slackToken);
+    // Initialize components with error handling
+    try {
+      this.classifier = new EnhancedIssueClassifier(this.config.openaiApiKey);
+      this.tracker = new IssueStateTracker();
+      this.educationSystem = new UserEducationSystem();
+      this.feedbackHandler = new EmojiFeedbackHandler(this.config.clickupApiKey, this.config.slackToken);
+    } catch (error) {
+      console.error('⚠️ Error initializing Enhanced Daily Workflow components:', error);
+      throw error;
+    }
   }
 
   /**
@@ -34,11 +40,11 @@ class EnhancedDailyWorkflow {
     
     try {
       // Step 1: Get new issues from last 24 hours
-      const newIssues = await this.getNewSlackIssues();
+      const newIssues = await this.getNewSlackIssues() || [];
       console.log(`📝 Found ${newIssues.length} potential new issues`);
 
       // Step 2: Check existing issue states
-      const stuckIssues = await this.checkStuckIssues();
+      const stuckIssues = await this.checkStuckIssues() || [];
       console.log(`⏰ Found ${stuckIssues.length} stuck issues needing attention`);
 
       // Step 3: Process each new issue with enhanced classification
@@ -285,18 +291,26 @@ class EnhancedDailyWorkflow {
    * Get new Slack issues from last 24 hours
    */
   async getNewSlackIssues() {
-    // In real implementation, this would query Slack API for messages with 🆘 emoji
-    console.log('📡 Fetching new Slack issues...');
-    
-    // Mock data for testing
-    return [
-      {
-        text: "🆘 Login button not working on mobile Safari",
-        user: "U12345",
-        channel: "C12345",
-        ts: Date.now() / 1000
-      }
-    ];
+    try {
+      // In real implementation, this would query Slack API for messages with 🆘 emoji
+      console.log('📡 Fetching new Slack issues...');
+      
+      // Mock data for testing
+      const mockIssues = [
+        {
+          text: "🆘 Login button not working on mobile Safari",
+          user: "U12345",
+          channel: "C12345",
+          ts: Date.now() / 1000
+        }
+      ];
+      
+      // Ensure we always return an array
+      return Array.isArray(mockIssues) ? mockIssues : [];
+    } catch (error) {
+      console.error('⚠️ Error fetching Slack issues:', error);
+      return []; // Return empty array on error
+    }
   }
 
   /**
