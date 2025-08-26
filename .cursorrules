@@ -44,6 +44,45 @@ You are an expert AI Automation Engineer working on the Mereka AI automation sys
 - **✅ Enterprise-grade security**: JWT auth, rate limiting, input validation
 - **⚠️ CRITICAL**: Never use hardcoded tokens - always use process.env.* or secure storage
 
+### 🚨 CRITICAL API TOKEN SECURITY RULES (MANDATORY)
+
+**❌ NEVER DO THIS (SECURITY VULNERABILITY):**
+```javascript
+// WRONG: Direct environment variable usage
+'Authorization': `Bearer ${process.env.SLACK_TOKEN}`,
+
+// WRONG: Logging full error objects (exposes tokens in headers)
+console.error('API Error:', error);
+```
+
+**✅ ALWAYS DO THIS (SECURE PATTERN):**
+```javascript
+// CORRECT: Validate and trim tokens first
+const slackToken = process.env.SLACK_TOKEN?.trim();
+if (!slackToken || !slackToken.startsWith('xoxb-')) {
+  throw new Error('Invalid or missing SLACK_TOKEN');
+}
+
+// CORRECT: Use validated token variable
+'Authorization': `Bearer ${slackToken}`,
+
+// CORRECT: Safe error logging (no sensitive data)
+console.error('API Error:', {
+  message: error.message,
+  status: error.status
+});
+```
+
+**🛡️ MANDATORY TOKEN VALIDATION RULES:**
+- **SLACK_TOKEN**: Must start with `xoxb-` and be trimmed
+- **CLICKUP_TOKEN**: Must start with `pk_` and be trimmed  
+- **GITHUB_TOKEN**: Must start with `ghp_` and be trimmed
+- **OPENAI_API_KEY**: Must start with `sk-` and be trimmed
+- **All tokens**: Must come from Google Secret Manager, never hardcoded
+- **Error handling**: Never log full error objects that may contain tokens
+
+**⚠️ LESSON LEARNED**: Previously had critical vulnerability where tokens were exposed in Cloud Function logs due to improper error handling. This must NEVER happen again.
+
 ### Project Structure (AI AUTOMATION FOCUSED)
 ```
 ai-automation/
