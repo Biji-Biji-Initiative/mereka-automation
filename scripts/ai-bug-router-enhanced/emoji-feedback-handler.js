@@ -516,7 +516,7 @@ AI will learn from this example! 🧠`;
       const response = await fetch('https://slack.com/api/chat.postMessage', {
         method: 'POST',
         headers: {
-          'Authorization': `Bearer ${this.slackToken?.trim()}`,
+          'Authorization': `Bearer ${this.slackToken}`,
           'Content-Type': 'application/json'
         },
         body: JSON.stringify(body)
@@ -528,8 +528,8 @@ AI will learn from this example! 🧠`;
         console.log('✅ Slack message sent successfully');
         return result;
       } else {
-        console.error('❌ Slack API error:', result.error);
-        throw new Error(`Slack API Error: ${result.error}`);
+        console.error('❌ Slack API error:', { error: result.error });
+        throw new Error('Slack API Error occurred');
       }
     } catch (error) {
       console.error('💥 Error sending Slack message:', {

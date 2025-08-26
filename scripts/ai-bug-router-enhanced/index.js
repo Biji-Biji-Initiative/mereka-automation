@@ -196,15 +196,19 @@ async function handleReactionEvent(event, res) {
 
       // Initialize emoji feedback handler
       const { EmojiFeedbackHandler } = require('./emoji-feedback-handler.js');
-      // Validate required environment variables
-      if (!process.env.CLICKUP_TOKEN || !process.env.SLACK_TOKEN) {
-        throw new Error('❌ Missing required environment variables: CLICKUP_TOKEN and SLACK_TOKEN must be set');
+      
+      // Validate and sanitize required environment variables
+      const clickupToken = process.env.CLICKUP_TOKEN?.trim().replace(/[^\w-]/g, '');
+      const slackToken = process.env.SLACK_TOKEN?.trim().replace(/[^\w-]/g, '');
+      
+      if (!clickupToken || !clickupToken.startsWith('pk_')) {
+        throw new Error('❌ Invalid or missing CLICKUP_TOKEN');
+      }
+      if (!slackToken || !slackToken.startsWith('xoxb-')) {
+        throw new Error('❌ Invalid or missing SLACK_TOKEN');
       }
 
-      const handler = new EmojiFeedbackHandler(
-        process.env.CLICKUP_TOKEN,
-        process.env.SLACK_TOKEN
-      );
+      const handler = new EmojiFeedbackHandler(clickupToken, slackToken);
 
       // Process the emoji feedback
       const feedbackConfig = {
@@ -391,88 +395,7 @@ async function postSlackResponse(channel, message, threadTs = null) {
   }
 }
 
-/**
- * Get Slack message content by channel and timestamp
- */
-async function getSlackMessage(channel, messageTs) {
-  try {
-    if (!process.env.SLACK_TOKEN) {
-      throw new Error('❌ SLACK_TOKEN environment variable is required');
-    }
-    const slackToken = process.env.SLACK_TOKEN;
-    
-    const response = await fetch(`https://slack.com/api/conversations.history?channel=${channel}&latest=${messageTs}&limit=1&inclusive=true`, {
-      headers: {
-        'Authorization': `Bearer ${slackToken}`,
-        'Content-Type': 'application/json'
-      }
-    });
-
-    const result = await response.json();
-    
-    if (result.ok && result.messages && result.messages.length > 0) {
-      console.log('✅ Retrieved original Slack message');
-      return result.messages[0];
-    } else {
-      console.error('❌ Failed to get Slack message:', result.error);
-      return null;
-    }
-    
-  } catch (error) {
-    console.error('💥 Error retrieving Slack message:', {
-      message: error.message,
-      type: error.name
-    });
-    return null;
-  }
-}
-
-/**
- * Post a response message to Slack
- */
-async function postSlackResponse(channel, message, threadTs = null) {
-  try {
-    if (!process.env.SLACK_TOKEN) {
-      throw new Error('❌ SLACK_TOKEN environment variable is required');
-    }
-    const slackToken = process.env.SLACK_TOKEN;
-    
-    const body = {
-      channel: channel,
-      text: message
-    };
-
-    // Reply in thread if threadTs provided
-    if (threadTs) {
-      body.thread_ts = threadTs;
-    }
-
-    const response = await fetch('https://slack.com/api/chat.postMessage', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${slackToken}`,
-        'Content-Type': 'application/json'
-      },
-      body: JSON.stringify(body)
-    });
-
-    const result = await response.json();
-    
-    if (result.ok) {
-      console.log('✅ Slack response sent successfully');
-    } else {
-      console.error('❌ Slack API error:', result.error);
-    }
-
-    return result;
-    
-  } catch (error) {
-    console.error('💥 Failed to send Slack response:', {
-      message: error.message,
-      type: error.name
-    });
-  }
-}
+// Duplicate functions removed - using the properly sanitized versions above
 
 /**
  * Health check endpoint for monitoring
